@@ -100,6 +100,7 @@ rrouter-boilerplate/
 │   ├── routes.ts                  # Route definitions
 │   ├── routes/                    # Page route components
 │   │   └── home.tsx
+│   ├── styles/                    # CSS token system and design tokens
 │   └── welcome/                   # Reusable components
 │       └── welcome.tsx
 ├── public/                        # Static assets
