@@ -199,7 +199,7 @@ $tp-fonts: (
 - `.tp-w--s` - Light weight (300) + Noto Sans
 - `.tp-w--m` - Regular weight (500) + Noto Sans
 - `.tp-w--l` - Bold weight (700) + Noto Sans
-- `.tp-s--md` - Font size (200px)
+- `.tp-s--md` - Font size (16px)
 - `.tp-ln--lg` - Line height (135%)
 - `.tp-a--c` - Text align center
 - `.tp-u` - Text underline
@@ -221,9 +221,9 @@ Padding and margin tokens.
 
 **Generated classes**:
 
-- `.sp-p--md` - Padding (medium)
-- `.sp-m--lg` - Margin (large)
-- `.sp-gap--sm` - Gap (for flex/grid)
+- `.p--100` - Padding (8px)
+- `.m--200` - Margin (16px)
+- `.gap--50` - Gap (for flex/grid - 4px)
 
 #### 4. **Dimensions** (`abstracts/_dimensions.scss`)
 
@@ -239,7 +239,7 @@ Responsive breakpoints for media queries.
 
 ```tsx
 // Good - uses token system
-<div className="c-bg--primary c-txt--secondary tp-w--m tp-s--lg sp-p--md">
+<div className="c-bg--primary c-txt--secondary tp-w--m tp-s--lg p--200">
   Content
 </div>
 ```
