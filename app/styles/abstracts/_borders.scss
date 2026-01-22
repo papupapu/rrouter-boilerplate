@@ -1,0 +1,35 @@
+@use "./functions" as functions;
+
+// Border radius variables
+$br-xs: var(--dim--50);
+$br-sm: var(--dim--75);
+$br-md: var(--dim--100);
+$br-lg: var(--dim--200);
+$br-pill: functions.toRem(512px);
+
+// Border width variables
+$b-sm: functions.toRem(0.5px);
+$b-md: functions.toRem(1px);
+$b-lg: var(--dim--25);
+$b-xl: var(--dim--50);
+
+// Border radius map
+$border-radius: (
+  xs: $br-xs,
+  sm: $br-sm,
+  md: $br-md,
+  lg: $br-lg,
+  pill: $br-pill,
+);
+
+// Border width map
+$border-width: (
+  0: 0,
+  sm: $b-sm,
+  md: $b-md,
+  lg: $b-lg,
+  xl: $b-xl,
+);
+
+$border-position: (top, right, bottom, left);
+$border-radius-position: (top-left, top-right, bottom-left, bottom-right);

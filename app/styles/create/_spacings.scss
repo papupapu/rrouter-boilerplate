@@ -1,0 +1,37 @@
+@use "sass:string";
+
+@use "../abstracts/spacings";
+
+@each $key, $value in spacings.$spacings {
+  @each $pfx, $prop in (m: margin, p: padding) {
+    .#{$pfx}--#{$key} {
+      #{$prop}: $value;
+    }
+
+    @each $pos in spacings.$spacing-position {
+      .#{$pfx}#{string.slice($pos, 1, 1)}--#{$key} {
+        #{$prop}-#{$pos}: $value;
+      }
+    }
+  }
+}
+
+@each $key, $value in spacings.$spacings-with-border {
+  @each $pfx, $prop in (p: padding) {
+    .#{$pfx}-wb--#{$key} {
+      #{$prop}: $value;
+    }
+
+    @each $pos in spacings.$spacing-with-border-position {
+      .#{$pfx}#{string.slice($pos, 1, 1)}-wb--#{$key} {
+        #{$prop}-#{$pos}: $value;
+      }
+    }
+  }
+}
+
+@each $key, $value in spacings.$gaps {
+  .gap--#{$key} {
+    gap: $value;
+  }
+}

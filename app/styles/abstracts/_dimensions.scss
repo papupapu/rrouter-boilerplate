@@ -1,0 +1,59 @@
+@use "./functions" as functions;
+
+$dim-25: functions.toRem(2px);
+$dim-50: functions.toRem(4px);
+$dim-75: functions.toRem(6px);
+$dim-100: functions.toRem(8px);
+$dim-125: functions.toRem(10px);
+$dim-150: functions.toRem(12px);
+$dim-175: functions.toRem(14px);
+$dim-187: functions.toRem(15px);
+$dim-200: functions.toRem(16px);
+$dim-225: functions.toRem(18px);
+$dim-250: functions.toRem(20px);
+$dim-300: functions.toRem(24px);
+$dim-400: functions.toRem(32px);
+$dim-500: functions.toRem(40px);
+$dim-600: functions.toRem(48px);
+
+$dimensions: (
+  25: $dim-25,
+  50: $dim-50,
+  75: $dim-75,
+  100: $dim-100,
+  125: $dim-125,
+  150: $dim-150,
+  175: $dim-175,
+  187: $dim-187,
+  200: $dim-200,
+  225: $dim-225,
+  250: $dim-250,
+  300: $dim-300,
+  400: $dim-400,
+  500: $dim-500,
+  600: $dim-600,
+);
+
+$dim-wb-25: functions.toRem(1px);
+$dim-wb-50: functions.toRem(3px);
+$dim-wb-75: functions.toRem(5px);
+$dim-wb-100: functions.toRem(7px);
+$dim-wb-125: functions.toRem(9px);
+$dim-wb-150: functions.toRem(11px);
+$dim-wb-200: functions.toRem(15px);
+$dim-wb-250: functions.toRem(19px);
+$dim-wb-300: functions.toRem(23px);
+$dim-wb-400: functions.toRem(31px);
+
+$dimensions-w-border: (
+  25: $dim-wb-25,
+  50: $dim-wb-50,
+  75: $dim-wb-75,
+  100: $dim-wb-100,
+  125: $dim-wb-125,
+  150: $dim-wb-150,
+  200: $dim-wb-200,
+  250: $dim-wb-250,
+  300: $dim-wb-300,
+  400: $dim-wb-400,
+);

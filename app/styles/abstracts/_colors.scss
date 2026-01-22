@@ -1,0 +1,149 @@
+$txt-primary: #1a1f24;
+$txt-secondary: #505a65;
+$txt-accent: #39434e;
+$txt-tertiary: #697684;
+$txt-fourth: #d8dbdf;
+$txt-inverse: #ffffff;
+$txt-inverse_fixed: #ffffff;
+$txt-secondary-hover: #252b33;
+$txt-secondary-active: #1a1f24;
+$txt-tertiary-hover: #39434e;
+$txt-tertiary-active: #96a1b0;
+$txt-brand-hover: #92001c;
+$txt-brand-active: #ee5d78;
+$txt-brand-disabled: #f095a6;
+$txt-disabled: #96a1b0;
+$txt-saved: #ffb505;
+$txt-brand: #e4002b;
+$txt-success: #007759;
+$txt-success-icons: #33d1a9;
+$txt-info: #505a65;
+$txt-warning: #ff9a2a;
+$txt-warning-dark: #663e11;
+$txt-error: #e4002b;
+$txt-error-dark: #680014;
+$txt-transparent: transparent;
+
+$bg-primary: #ffffff;
+$bg-secondary: #f8f9fa;
+$bg-tertiary: #f0f2f5;
+$bg-fourth: #d8dbdf;
+$bg-inverse: #39434e;
+$bg-shadow: #697684;
+$bg-brand-hover: #a30000;
+$bg-brand-active: #680014;
+$bg-brand-disabled: #f095a6;
+$bg-secondary-hover: #252b33;
+$bg-secondary-active: #1a1f24;
+$bg-primary-hover: #f8f9fa;
+$bg-primary-active: #39434e;
+$bg-disabled: #ebeced;
+$bg-focus: #9dcdfd;
+$bg-brand: #e4002b;
+$bg-brand-light: #fdedf0;
+$bg-success: #e6f9f4;
+$bg-highlight: #049999;
+$bg-error: #fdedf0;
+$bg-mandatory: #fff9f2;
+$bg-warning: #fff5ea;
+$bg-accent: #39434e;
+$bg-transparent: transparent;
+
+$br-primary: #1a1f24;
+// $br-secondary: #505a65;
+$br-secondary: #39434e;
+$br-tertiary: #697684;
+$br-fourth: #d8dbdf;
+$br-inverse: #ffffff;
+$br-brand-hover: #a30000;
+$br-brand-active: #680014;
+$br-brand-disabled: #f095a6;
+$br-secondary-hover: #1a1f24;
+$br-secondary-active: #1a1f24;
+$br-fourth-hover: #252b33;
+$br-fourth-active: #505a65;
+$br-disabled: #ebeced;
+$br-focus: #0981f9;
+$br-brand: #e4002b;
+$br-success: #33d1a9;
+$br-success-high-emphasis: #007759;
+$br-warning: #ff9a2a;
+$br-error: #e4002b;
+$br-transparent: transparent;
+
+$text: (
+  primary: $txt-primary,
+  secondary: $txt-secondary,
+  tertiary: $txt-tertiary,
+  fourth: $txt-fourth,
+  inverse: $txt-inverse,
+  inverse_fixed: $txt-inverse_fixed,
+  secondary-hover: $txt-secondary-hover,
+  secondary-active: $txt-secondary-active,
+  tertiary-hover: $txt-tertiary-hover,
+  tertiary-active: $txt-tertiary-active,
+  brand-hover: $txt-brand-hover,
+  brand-active: $txt-brand-active,
+  brand-disabled: $txt-brand-disabled,
+  disabled: $txt-disabled,
+  saved: $txt-saved,
+  brand: $txt-brand,
+  success: $txt-success,
+  success-icons: $txt-success-icons,
+  info: $txt-info,
+  warning: $txt-warning,
+  warning-dark: $txt-warning-dark,
+  error: $txt-error,
+  error-dark: $txt-error-dark,
+  transparent: $txt-transparent,
+);
+
+$background: (
+  primary: $bg-primary,
+  secondary: $bg-secondary,
+  tertiary: $bg-tertiary,
+  fourth: $bg-fourth,
+  inverse: $bg-inverse,
+  shadow: $bg-shadow,
+  brand-hover: $bg-brand-hover,
+  brand-active: $bg-brand-active,
+  brand-disabled: $bg-brand-disabled,
+  secondary-hover: $bg-secondary-hover,
+  secondary-active: $bg-secondary-active,
+  primary-hover: $bg-primary-hover,
+  primary-active: $bg-primary-active,
+  disabled: $bg-disabled,
+  focus: $bg-focus,
+  brand: $bg-brand,
+  brand-light: $bg-brand-light,
+  success: $bg-success,
+  highlight: $bg-highlight,
+  error: $bg-error,
+  mandatory: $bg-mandatory,
+  warning: $bg-warning,
+  accent: $bg-accent,
+  transparent: $bg-transparent,
+);
+
+$border: (
+  primary: $br-primary,
+  secondary: $br-secondary,
+  tertiary: $br-tertiary,
+  fourth: $br-fourth,
+  inverse: $br-inverse,
+  brand-hover: $br-brand-hover,
+  brand-active: $br-brand-active,
+  brand-disabled: $br-brand-disabled,
+  secondary-hover: $br-secondary-hover,
+  secondary-active: $br-secondary-active,
+  fourth-hover: $br-fourth-hover,
+  fourth-active: $br-fourth-active,
+  disabled: $br-disabled,
+  focus: $br-focus,
+  brand: $br-brand,
+  success: $br-success,
+  success-high-emphasis: $br-success-high-emphasis,
+  warning: $br-warning,
+  error: $br-error,
+  transparent: $br-transparent,
+);

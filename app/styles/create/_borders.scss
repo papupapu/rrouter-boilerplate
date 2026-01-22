@@ -1,0 +1,36 @@
+@use "sass:string";
+
+@use "../abstracts/borders";
+
+@each $key, $value in borders.$border-radius {
+  .b-r--#{$key} {
+    border-radius: $value;
+  }
+
+  @each $pos in borders.$border-radius-position {
+    $pos2: "figa";
+
+    @if string.slice($pos, 1, 1) == "t" {
+      $pos2: string.slice($pos, 5, 5);
+    } @else if string.slice($pos, 1, 1) == "b" {
+      $pos2: string.slice($pos, 8, 8);
+    }
+    .b-r-#{string.slice($pos, 1, 1)}#{$pos2}--#{$key} {
+      border-#{$pos}-radius: $value;
+    }
+  }
+}
+
+@each $key, $value in borders.$border-width {
+  .b--#{$key} {
+    border-width: $value;
+    border-style: solid;
+  }
+
+  @each $pos in borders.$border-position {
+    .b#{string.slice($pos, 1, 1)}--#{$key} {
+      border-#{$pos}-width: $value;
+      border-#{$pos}-style: solid;
+    }
+  }
+}

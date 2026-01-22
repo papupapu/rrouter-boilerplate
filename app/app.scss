@@ -1,4 +1,5 @@
-@import "modern-normalize";
+@use "modern-normalize" as *;
+@use "./styles/index" as *;
 
 html,
 body {

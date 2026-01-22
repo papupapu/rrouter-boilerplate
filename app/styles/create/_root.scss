@@ -1,0 +1,13 @@
+@use "sass:string";
+
+@use "../abstracts/dimensions";
+
+:root {
+  @each $key, $value in dimensions.$dimensions {
+    --dim--#{$key}: #{$value};
+  }
+
+  @each $key, $value in dimensions.$dimensions-w-border {
+    --dim-wb--#{$key}: #{$value};
+  }
+}

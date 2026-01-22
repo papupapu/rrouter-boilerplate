@@ -1,0 +1,52 @@
+$bpval-xxs: 360px;
+$bpval-xs: 576px;
+$bpval-sm: 768px;
+$bpval-md: 1024px;
+$bpval-lg: 1280px;
+$bpval-xl: 1600px;
+$bpval-xxl: 1900px;
+$bpval-smart: 767px;
+$bpval-desk: 1023px;
+
+$breakpoints: (
+  bp-xxs: $bpval-xxs,
+  bp-xs: $bpval-xs,
+  bp-sm: $bpval-sm,
+  bp-md: $bpval-md,
+  bp-lg: $bpval-lg,
+  bp-xl: $bpval-xl,
+  bp-xxl: $bpval-xxl,
+  bp-smart: $bpval-smart,
+  bp-desk: $bpval-desk,
+);
+
+$bp-xxs: (
+  min: $bpval-xxs,
+);
+$bp-xs: (
+  min: $bpval-xs,
+);
+$bp-sm: (
+  min: $bpval-sm,
+);
+$bp-md: (
+  min: $bpval-md,
+);
+$bp-lg: (
+  min: $bpval-lg,
+);
+$bp-xl: (
+  min: $bpval-xl,
+);
+$bp-xxl: (
+  min: $bpval-xxl,
+);
+$bp-smallsmart: (
+  max: $bpval-xxs - 1px,
+);
+$bp-smart: (
+  max: $bpval-smart,
+);
+$bp-desk: (
+  max: $bpval-desk,
+);

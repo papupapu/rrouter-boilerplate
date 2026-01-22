@@ -1,0 +1,76 @@
+$spacing-25: var(--dim--25);
+$spacing-50: var(--dim--50);
+$spacing-75: var(--dim--75);
+$spacing-100: var(--dim--100);
+$spacing-125: var(--dim--125);
+$spacing-150: var(--dim--150);
+$spacing-175: var(--dim--175);
+$spacing-200: var(--dim--200);
+$spacing-250: var(--dim--250);
+$spacing-300: var(--dim--300);
+$spacing-400: var(--dim--400);
+$spacing-500: var(--dim--500);
+$spacing-600: var(--dim--600);
+
+$spacing-wb-25: var(--dim-wb--25);
+$spacing-wb-50: var(--dim-wb--50);
+$spacing-wb-75: var(--dim-wb--75);
+$spacing-wb-100: var(--dim-wb--100);
+$spacing-wb-125: var(--dim-wb--125);
+$spacing-wb-150: var(--dim-wb--150);
+$spacing-wb-200: var(--dim-wb--200);
+$spacing-wb-250: var(--dim-wb--250);
+$spacing-wb-300: var(--dim-wb--300);
+$spacing-wb-400: var(--dim-wb--400);
+$spacing-wb-500: var(--dim-wb--500);
+$spacing-wb-600: var(--dim-wb--600);
+
+$spacings: (
+  auto: auto,
+  0: 0,
+  25: $spacing-25,
+  50: $spacing-50,
+  75: $spacing-75,
+  100: $spacing-100,
+  125: $spacing-125,
+  150: $spacing-150,
+  200: $spacing-200,
+  250: $spacing-250,
+  300: $spacing-300,
+  400: $spacing-400,
+);
+
+$spacing-position: (top, right, bottom, left);
+
+$spacings-with-border: (
+  25: $spacing-wb-25,
+  50: $spacing-wb-50,
+  75: $spacing-wb-75,
+  100: $spacing-wb-100,
+  125: $spacing-wb-125,
+  150: $spacing-wb-150,
+  200: $spacing-wb-200,
+  250: $spacing-wb-250,
+  300: $spacing-wb-300,
+  400: $spacing-wb-400,
+);
+
+$spacing-with-border-position: (top, bottom);
+
+$gap-25: var(--dim--25);
+$gap-50: var(--dim--50);
+$gap-100: var(--dim--100);
+$gap-150: var(--dim--150);
+$gap-200: var(--dim--200);
+$gap-300: var(--dim--300);
+$gap-400: var(--dim--400);
+
+$gaps: (
+  25: $gap-25,
+  50: $gap-50,
+  100: $gap-100,
+  150: $gap-150,
+  200: $gap-200,
+  300: $gap-300,
+  400: $gap-400,
+);

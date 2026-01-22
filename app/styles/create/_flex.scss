@@ -1,0 +1,33 @@
+@use "sass:string";
+
+@use "../abstracts/flex";
+
+@each $key, $value in flex.$items {
+  .items-#{$key} {
+    align-items: $value;
+  }
+}
+
+@each $key, $value in flex.$justify {
+  .justify-#{$key} {
+    justify-content: $value;
+  }
+}
+
+@each $key, $value in flex.$flex-items {
+  .#{$key} {
+    flex: $value;
+  }
+}
+
+@each $key, $value in flex.$flex-directions {
+  .flex-#{$key} {
+    flex-direction: $value;
+  }
+}
+
+@each $key, $value in flex.$flex-wrap {
+  .wrap-#{$key} {
+    flex-wrap: $value;
+  }
+}

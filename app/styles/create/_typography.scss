@@ -1,0 +1,58 @@
+@use "sass:string";
+
+@use "../abstracts/typography";
+
+@each $key, $value in typography.$tp-fonts {
+  .tp-w--#{$key} {
+    font-family: nth($value, 1), sans-serif;
+    font-weight: nth($value, 2);
+  }
+}
+
+@each $key, $value in typography.$tp-sizes {
+  .tp-s--#{$key} {
+    font-size: $value;
+  }
+}
+
+@each $key, $value in typography.$tp-ln {
+  .tp-ln--#{$key} {
+    line-height: $value;
+  }
+}
+
+@each $value in typography.$tp-align {
+  .tp-a--#{string.slice($value, 1, 1)} {
+    text-align: $value;
+  }
+}
+
+@each $value in typography.$tp-valign {
+  .tp-va--#{string.slice($value, 1, 1)} {
+    vertical-align: $value;
+  }
+}
+
+.tp {
+  &--up {
+    text-transform: uppercase;
+  }
+
+  &--u {
+    text-decoration: underline;
+  }
+
+  &--i {
+    font-style: italic;
+  }
+
+  &--ell {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &--nwr {
+    white-space: nowrap;
+  }
+}

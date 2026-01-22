@@ -1,0 +1,75 @@
+$fonts: (
+  300: 300,
+  500: 500,
+  700: 700,
+);
+
+// Font tuple map: (font-name, weight)
+$tp-fonts: (
+  s: (
+    "Noto Sans",
+    300,
+  ),
+  m: (
+    "Noto Sans",
+    500,
+  ),
+  l: (
+    "Noto Sans",
+    700,
+  ),
+);
+
+// Mixin to apply font with family and weight
+@mixin tp-font($size) {
+  $font-tuple: map-get($tp-fonts, $size);
+  @if $font-tuple {
+    font-family: nth($font-tuple, 1), sans-serif;
+    font-weight: nth($font-tuple, 2);
+  } @else {
+    @error "Font size '#{$size}' not found in $tp-fonts map. Available sizes: s, m, l";
+  }
+}
+
+$tp-size-3xs: var(--dim--125);
+$tp-size-xxs: var(--dim--150);
+$tp-size-xs: var(--dim--175);
+$tp-size-sm: var(--dim--187);
+$tp-size-md: var(--dim--200);
+$tp-size-lg: var(--dim--225);
+$tp-size-xl: var(--dim--250);
+$tp-size-xxl: var(--dim--300);
+$tp-size-3xl: var(--dim--400);
+$tp-size-4xl: var(--dim--500);
+$tp-size-5xl: var(--dim--600);
+
+$tp-sizes: (
+  3xs: $tp-size-3xs,
+  xxs: $tp-size-xxs,
+  xs: $tp-size-xs,
+  sm: $tp-size-sm,
+  md: $tp-size-md,
+  lg: $tp-size-lg,
+  xl: $tp-size-xl,
+  xxl: $tp-size-xxl,
+  3xl: $tp-size-3xl,
+  4xl: $tp-size-4xl,
+  5xl: $tp-size-5xl,
+);
+
+$tp-line-height-auto: 100%;
+$tp-line-height-sm: 120%;
+$tp-line-height-md: 125%;
+$tp-line-height-lg: 135%;
+$tp-line-height-xl: 150%;
+
+$tp-ln: (
+  auto: $tp-line-height-auto,
+  sm: $tp-line-height-sm,
+  md: $tp-line-height-md,
+  lg: $tp-line-height-lg,
+  xl: $tp-line-height-xl,
+);
+
+$tp-align: (left, center, right);
+$tp-valign: (middle);

@@ -1,0 +1,48 @@
+@use "sass:string";
+
+@use "../abstracts/statuses";
+
+@each $key, $value in statuses.$positions {
+  .#{$key} {
+    position: $value;
+  }
+}
+
+@each $key, $value in statuses.$displays {
+  .#{$key} {
+    display: $value;
+  }
+}
+
+@each $key, $value in statuses.$overflows {
+  .overflow-#{$key} {
+    overflow: $value;
+  }
+  @each $name, $pos in (x: x, y: y) {
+    .overflow-#{$name}-#{$key} {
+      overflow-#{$name}: $value;
+    }
+  }
+}
+
+.clickable {
+  @media (hover: hover) {
+    cursor: pointer;
+  }
+}
+
+.disabled {
+  pointer-events: none;
+  touch-action: none;
+  user-select: none;
+}
+
+.transparent {
+  opacity: 0;
+}
+
+@each $key, $value in statuses.$mutables {
+  .is-anim-#{$key} {
+    transition: string.unquote($value) 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}

@@ -1,0 +1,27 @@
+@use "sass:string";
+
+@use "../abstracts/sizes";
+
+@each $key, $value in sizes.$widths {
+  @each $pfx, $prop in sizes.$sizes {
+    .#{$key}--#{$pfx} {
+      @if $pfx == "full" {
+        #{$value}: #{$prop}vw;
+      } @else {
+        #{$value}: $prop;
+      }
+    }
+  }
+}
+
+@each $key, $value in sizes.$heights {
+  @each $pfx, $prop in sizes.$sizes {
+    .#{$key}--#{$pfx} {
+      @if $pfx == "full" {
+        #{$value}: #{$prop}vh;
+      } @else {
+        #{$value}: $prop;
+      }
+    }
+  }
+}

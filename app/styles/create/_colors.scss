@@ -1,0 +1,21 @@
+@use "sass:string";
+
+@use "../abstracts/colors";
+
+@each $key, $value in colors.$text {
+  .c-txt--#{"" + $key} {
+    color: $value;
+  }
+}
+
+@each $key, $value in colors.$background {
+  .c-bg--#{"" + $key} {
+    background-color: $value;
+  }
+}
+
+@each $key, $value in colors.$border {
+  .c-br--#{"" + $key} {
+    border-color: $value;
+  }
+}

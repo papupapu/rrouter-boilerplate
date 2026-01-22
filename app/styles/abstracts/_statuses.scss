@@ -1,0 +1,48 @@
+$absolute: absolute;
+$relative: relative;
+$fixed: fixed;
+$sticky: sticky;
+
+$positions: (
+  absolute: $absolute,
+  relative: $relative,
+  fixed: $fixed,
+  sticky: $sticky,
+);
+
+$block: block;
+$inline: inline;
+$inlineBlock: inline-block;
+$flex: flex;
+$grid: grid;
+$hidden: none;
+
+$displays: (
+  block: $block,
+  inline: $inline,
+  inline-block: $inlineBlock,
+  flex: $flex,
+  grid: $grid,
+  hidden: $hidden,
+);
+
+$overflow-h: hidden;
+$overflow-v: visible;
+$overflow-auto: auto;
+$overflow-scroll: scroll;
+
+$overflows: (
+  hidden: $overflow-h,
+  visible: $overflow-v,
+  auto: $overflow-auto,
+  scroll: $overflow-scroll,
+);
+
+$mutables: (
+  maxWidth: "max-width",
+  maxHeight: "max-height",
+  width: "width",
+  height: "height",
+  opacity: "opacity",
+  transform: "transform",
+);

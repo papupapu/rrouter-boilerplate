@@ -1,0 +1,57 @@
+$items-start: flex-start;
+$items-end: flex-end;
+$items-center: center;
+$items-baseline: baseline;
+$items-stretch: stretch;
+
+$items: (
+  start: $items-start,
+  end: $items-end,
+  center: $items-center,
+  baseline: $items-baseline,
+  stretch: $items-stretch,
+);
+
+$justify-start: flex-start;
+$justify-end: flex-end;
+$justify-center: center;
+$justify-between: space-between;
+$justify-around: space-around;
+$justify-evenly: space-evenly;
+$justify-stretch: stretch;
+$justify-baseline: baseline;
+
+$justify: (
+  start: $justify-start,
+  end: $justify-end,
+  center: $justify-center,
+  between: $justify-between,
+  around: $justify-around,
+  evenly: $justify-evenly,
+  stretch: $justify-stretch,
+  baseline: $justify-baseline,
+);
+
+$flex-item: 1 1 0%;
+$flex-item-fixed: 0 1 auto;
+$flex-item-strech: 1 1 auto;
+
+$flex-items: (
+  flex-item: $flex-item,
+  flex-item-fixed: $flex-item-fixed,
+  flex-item-stretch: $flex-item-strech,
+);
+
+$row: row;
+$column: column;
+
+$flex-directions: (
+  row: $row,
+  column: $column,
+);
+
+$flex-wrap: (
+  nowrap: nowrap,
+  wrap: wrap,
+  wrap-reverse: wrap-reverse,
+);

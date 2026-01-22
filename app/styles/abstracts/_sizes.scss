@@ -1,0 +1,20 @@
+$widths: (
+  w: width,
+  minW: min-width,
+  maxW: max-width,
+  fitW: fit-content,
+);
+
+$heights: (
+  h: height,
+  minH: min-height,
+  maxH: max-height,
+  fitH: fit-content,
+);
+
+$sizes: (
+  0: 0,
+  100: 100%,
+  full: 100,
+  fit: fit-content,
+);

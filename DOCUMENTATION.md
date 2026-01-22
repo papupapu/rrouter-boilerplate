@@ -9,6 +9,7 @@
 - [Available Scripts](#available-scripts)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
+- [CSS Token System](#css-token-system)
 - [Code Quality](#code-quality)
 - [Configuration Files](#configuration-files)
 - [Development](#development)
@@ -113,6 +114,219 @@ rrouter-boilerplate/
 ├── package.json                   # Dependencies and scripts
 ├── Dockerfile                     # Docker container definition
 └── DOCUMENTATION.md               # This file
+```
+
+## CSS Token System
+
+This project uses a **CSS Token System** based on Sass to manage all design tokens (colors, typography, spacing, dimensions, etc.) in a centralized, reusable way. The goal is to **minimize custom CSS file creation** and promote consistency across the design.
+
+### Philosophy
+
+- **Token-first design**: All design decisions (colors, fonts, sizes, spacing) are defined as tokens
+- **Generated classes**: CSS classes are generated automatically from token maps
+- **Reduced custom CSS**: Components should use generated token classes, not custom styles
+- **Single source of truth**: Token definitions are centralized, making changes easy and consistent
+
+### File Structure
+
+```
+app/styles/
+├── abstracts/              # Token definitions (variables and maps)
+│   ├── _colors.scss        # Color tokens (text, background, border)
+│   ├── _typography.scss    # Typography tokens (fonts, sizes, line-heights)
+│   ├── _dimensions.scss    # Size and dimension tokens
+│   ├── _spacings.scss      # Spacing tokens
+│   ├── _breakpoints.scss   # Responsive breakpoints
+│   ├── _functions.scss     # Utility functions
+│   ├── _mixins.scss        # Reusable mixins
+│   └── index.scss          # Exports all abstracts
+├── create/                 # CSS class generation from tokens
+│   ├── _colors.scss        # Generates .c-txt-*, .c-bg-*, .c-br-* classes
+│   ├── _typography.scss    # Generates .tp-w-*, .tp-s-*, .tp-ln-* classes
+│   ├── _spacings.scss      # Generates spacing utility classes
+│   ├── _sizes.scss         # Generates size utility classes
+│   ├── _flex.scss          # Generates flexbox utility classes
+│   ├── _root.scss          # Defines :root CSS custom properties
+│   └── _index.scss         # Imports all create files
+└── index.scss              # Main export file
+```
+
+### Token Categories
+
+#### 1. **Colors** (`abstracts/_colors.scss`)
+
+Defined as Sass variables, organized by use case:
+
+- `$txt-*` - Text colors
+- `$bg-*` - Background colors
+- `$br-*` - Border colors
+
+**Generated classes** (from `create/_colors.scss`):
+
+- `.c-txt--primary` - Apply text color
+- `.c-bg--brand` - Apply background color
+- `.c-br--secondary` - Apply border color
+
+**Example**:
+
+```tsx
+<div className="c-bg--brand c-txt--inverse">Branded content</div>
+```
+
+#### 2. **Typography** (`abstracts/_typography.scss`)
+
+Font tokens with automatic weight application:
+
+```scss
+$tp-fonts: (
+  s: (
+    "Noto Sans",
+    300,
+  ),
+  m: (
+    "Noto Sans",
+    500,
+  ),
+  l: (
+    "Noto Sans",
+    700,
+  ),
+);
+```
+
+**Generated classes** (from `create/_typography.scss`):
+
+- `.tp-w--s` - Light weight (300) + Noto Sans
+- `.tp-w--m` - Regular weight (500) + Noto Sans
+- `.tp-w--l` - Bold weight (700) + Noto Sans
+- `.tp-s--md` - Font size (200px)
+- `.tp-ln--lg` - Line height (135%)
+- `.tp-a--c` - Text align center
+- `.tp-u` - Text underline
+- `.tp--ell` - Ellipsis truncation
+
+**Mixin for custom usage**:
+
+```scss
+@use "~/styles/abstracts/typography";
+
+.my-custom-heading {
+  @include typography.tp-font(l); // Applies 'Noto Sans' + font-weight: 700
+}
+```
+
+#### 3. **Spacing** (`abstracts/_spacings.scss`)
+
+Padding and margin tokens.
+
+**Generated classes**:
+
+- `.sp-p--md` - Padding (medium)
+- `.sp-m--lg` - Margin (large)
+- `.sp-gap--sm` - Gap (for flex/grid)
+
+#### 4. **Dimensions** (`abstracts/_dimensions.scss`)
+
+Width, height, and responsive dimension tokens.
+
+#### 5. **Breakpoints** (`abstracts/_breakpoints.scss`)
+
+Responsive breakpoints for media queries.
+
+### Using the Token System
+
+#### ✅ **DO: Use generated classes**
+
+```tsx
+// Good - uses token system
+<div className="c-bg--primary c-txt--secondary tp-w--m tp-s--lg sp-p--md">
+  Content
+</div>
+```
+
+#### ❌ **DON'T: Create custom styles for design decisions**
+
+```tsx
+// Avoid - creates unnecessary custom CSS
+import styles from './custom.module.scss';
+
+<div className={styles.customContainer}>Content</div>
+
+// custom.module.scss
+.customContainer {
+  background-color: #ffffff; // Use .c-bg--primary instead
+  color: #505a65;            // Use .c-txt--secondary instead
+  font-size: 1.25rem;        // Use .tp-s--lg instead
+  padding: 1rem;             // Use .sp-p--md instead
+}
+```
+
+### When to Create Custom Styles
+
+Custom Sass files should **only** be created for:
+
+1. **Component-specific layouts** - Complex layout logic that can't be expressed with tokens
+2. **Animations & transitions** - Keyframes and animation rules
+3. **Complex selectors** - Pseudo-elements, pseudo-classes with specific logic
+4. **Vendor-specific prefixes** - Browser compatibility workarounds
+
+**Example of legitimate custom style**:
+
+```scss
+// myComponent.module.scss
+.card {
+  border-radius: var(--dim--200); // Uses token for radius
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); // Complex shadow logic
+  transition: box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  }
+}
+```
+
+### Adding New Tokens
+
+When adding new design tokens:
+
+1. **Define the token** in the appropriate `abstracts/_*.scss` file
+2. **Add it to the map** (e.g., `$colors`, `$tp-sizes`, `$spacings`)
+3. **The class generation loop** in `create/_*.scss` will automatically create the class
+4. **No manual class creation needed**
+
+**Example: Adding a new color**:
+
+```scss
+// abstracts/_colors.scss
+$bg-success: #007759;
+$backgrounds: (
+  primary: $bg-primary,
+  secondary: $bg-secondary,
+  success: $bg-success, // New token
+);
+
+// create/_colors.scss automatically generates:
+// .c-bg--success { background-color: #007759; }
+```
+
+### Debugging Token Classes
+
+To see all available classes:
+
+```bash
+# Look at generated CSS in browser DevTools
+# Or search your build output for .c-bg--, .tp-w--, etc.
+```
+
+To verify token values:
+
+```scss
+// In any Sass file
+@use "~/styles/abstracts/colors";
+
+.debug {
+  color: colors.$txt-primary; // Access token directly
+}
 ```
 
 ## Code Quality
