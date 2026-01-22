@@ -14,6 +14,7 @@
 - [Configuration Files](#configuration-files)
 - [Development](#development)
 - [Building & Deployment](#building--deployment)
+- [Bundle Analysis](#bundle-analysis)
 - [Git Workflow](#git-workflow)
 
 ## Prerequisites
@@ -46,6 +47,7 @@ The `prepare` script will automatically run `husky install` to set up Git hooks.
 
 - `yarn dev` - Start development server with hot module reloading (HMR)
 - `yarn build` - Build for production (outputs to `./build/` directory)
+- `yarn analyze` - Build for production and open interactive bundle analysis report
 - `yarn start` - Start production server from built files
 - `yarn typecheck` - Run TypeScript type checking and React Router code generation
 
@@ -74,13 +76,14 @@ The `prepare` script will automatically run `husky install` to set up Git hooks.
 
 ### Development Tools
 
-| Technology         | Version | Purpose                       |
-| ------------------ | ------- | ----------------------------- |
-| ESLint             | 9.0.0   | Code linting (flat config)    |
-| @typescript-eslint | 8.0.0   | TypeScript support for ESLint |
-| Prettier           | 3.0.0   | Code formatter                |
-| Husky              | 9.0.0   | Git hooks manager             |
-| lint-staged        | 15.0.0  | Run linters on staged files   |
+| Technology               | Version | Purpose                            |
+| ------------------------ | ------- | ---------------------------------- |
+| ESLint                   | 9.0.0   | Code linting (flat config)         |
+| @typescript-eslint       | 8.0.0   | TypeScript support for ESLint      |
+| Prettier                 | 3.0.0   | Code formatter                     |
+| Husky                    | 9.0.0   | Git hooks manager                  |
+| lint-staged              | 15.0.0  | Run linters on staged files        |
+| rollup-plugin-visualizer | 6.0.5   | Bundle size analysis and reporting |
 
 ### Server Runtime
 
@@ -548,6 +551,61 @@ docker run -p 3000:3000 rrouter-boilerplate
 - Installs dependencies with Yarn
 - Builds application
 - Exposes port 3000
+
+## Bundle Analysis
+
+### Overview
+
+The project includes `rollup-plugin-visualizer` to analyze and visualize the client-side bundle size during production builds. This helps identify which modules are taking up the most space and spot potential optimization opportunities.
+
+### Generating a Bundle Report
+
+```bash
+yarn analyze
+```
+
+This command:
+
+1. Builds the application for production
+2. Generates an interactive bundle visualization report
+3. Automatically opens `dist/stats.html` in your default browser
+
+### Understanding the Report
+
+The visualization shows:
+
+- **Module sizes**: How much space each module and dependency takes in the final bundle
+- **Gzip size**: Compressed size of modules (what users actually download)
+- **Brotli size**: Alternative compression format
+- **Color coding**: Identifies large modules that may need optimization
+- **Interactive exploration**: Click modules to see details and dependencies
+
+### Optimization Tips
+
+When reviewing the bundle report:
+
+1. **Identify large dependencies** - Check if any third-party libraries are unexpectedly large
+2. **Code splitting opportunities** - Large route components can be lazy-loaded
+3. **Tree-shaking effectiveness** - Ensure unused code is being removed
+4. **Compression impact** - Review gzip vs brotli sizes to understand compression effectiveness
+
+**Example optimization**: If a route's component is large, consider:
+
+```tsx
+// Instead of direct import
+import AboutPage from "~/views/about/about.tsx";
+
+// Use dynamic import (lazy loading)
+const AboutPage = lazy(() => import("~/views/about/about.tsx"));
+```
+
+### CI/CD Integration
+
+The `dist/stats.html` report is ignored by Git (see `.gitignore`), so it won't clutter your repository. For CI/CD pipelines, you can:
+
+1. Generate reports on each build: `yarn analyze`
+2. Archive the `dist/stats.html` as an artifact
+3. Compare reports over time to track bundle size trends
 
 ## Git Workflow
 
