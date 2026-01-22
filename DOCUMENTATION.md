@@ -98,8 +98,16 @@ rrouter-boilerplate/
 │   ├── app.scss                   # Global styles with modern-normalize import
 │   ├── root.tsx                   # Root layout and error boundary
 │   ├── routes.ts                  # Route definitions
-│   ├── routes/                    # Page route components
-│   │   └── home.tsx
+│   ├── routes/                    # Route configuration files (layouts, route structure)
+│   │   ├── home.tsx               # Home route configuration
+│   │   └── about/
+│   │       ├── layout.tsx         # About section layout
+│   │       └── about.tsx          # About route configuration
+│   ├── views/                     # Page content components
+│   │   ├── home/
+│   │   │   └── home.tsx           # Home page content
+│   │   └── about/
+│   │       └── about.tsx          # About page content
 │   ├── styles/                    # CSS token system and design tokens
 │   └── welcome/                   # Reusable components
 │       └── welcome.tsx
