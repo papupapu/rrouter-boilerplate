@@ -1,11 +1,12 @@
+@use "sass:list";
 @use "sass:string";
 
 @use "../abstracts/typography";
 
 @each $key, $value in typography.$tp-fonts {
   .tp-w--#{$key} {
-    font-family: nth($value, 1), sans-serif;
-    font-weight: nth($value, 2);
+    font-family: list.nth($value, 1), sans-serif;
+    font-weight: list.nth($value, 2);
   }
 }
 
