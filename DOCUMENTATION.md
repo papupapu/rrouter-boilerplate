@@ -11,6 +11,7 @@
 - [Project Structure](#project-structure)
 - [CSS Token System](#css-token-system)
 - [Code Quality](#code-quality)
+- [State Management & Context API](#state-management--context-api)
 - [Configuration Files](#configuration-files)
 - [Development](#development)
 - [Building & Deployment](#building--deployment)
@@ -60,12 +61,14 @@ The `prepare` script will automatically run `husky install` to set up Git hooks.
 
 ### Core Framework
 
-| Technology   | Version | Purpose                               |
-| ------------ | ------- | ------------------------------------- |
-| React        | 19.2.3  | UI framework                          |
-| React Router | 7.12.0  | Client-side routing and SSR framework |
-| TypeScript   | 5.9.2   | Static type checking                  |
-| Vite         | 7.1.7   | Build tool and dev server             |
+| Technology           | Version | Purpose                                                    |
+| -------------------- | ------- | ---------------------------------------------------------- |
+| React                | 19.2.3  | UI framework                                               |
+| React DOM            | 19.2.3  | React DOM rendering                                        |
+| React Router         | 7.12.0  | Client-side routing and SSR framework                      |
+| use-context-selector | 2.0.0   | Context API optimization (prevents unnecessary re-renders) |
+| TypeScript           | 5.9.2   | Static type checking                                       |
+| Vite                 | 7.1.7   | Build tool and dev server                                  |
 
 ### Styling
 
@@ -76,14 +79,28 @@ The `prepare` script will automatically run `husky install` to set up Git hooks.
 
 ### Development Tools
 
-| Technology               | Version | Purpose                            |
-| ------------------------ | ------- | ---------------------------------- |
-| ESLint                   | 9.0.0   | Code linting (flat config)         |
-| @typescript-eslint       | 8.0.0   | TypeScript support for ESLint      |
-| Prettier                 | 3.0.0   | Code formatter                     |
-| Husky                    | 9.0.0   | Git hooks manager                  |
-| lint-staged              | 15.0.0  | Run linters on staged files        |
-| rollup-plugin-visualizer | 6.0.5   | Bundle size analysis and reporting |
+| Technology                | Version | Purpose                                 |
+| ------------------------- | ------- | --------------------------------------- |
+| ESLint                    | 9.0.0   | Code linting (flat config)              |
+| @typescript-eslint        | 8.0.0   | TypeScript support for ESLint           |
+| eslint-plugin-react       | 7.33.2  | React best practices for ESLint         |
+| eslint-plugin-react-hooks | 4.6.0   | React Hooks rules for ESLint            |
+| eslint-config-prettier    | 9.0.0   | Disables conflicting ESLint rules       |
+| Prettier                  | 3.0.0   | Code formatter                          |
+| Husky                     | 9.0.0   | Git hooks manager                       |
+| lint-staged               | 15.0.0  | Run linters on staged files             |
+| rollup-plugin-visualizer  | 6.0.5   | Bundle size analysis and reporting      |
+| @react-router/dev         | 7.12.0  | React Router dev server and tools       |
+| vite-tsconfig-paths       | 5.1.4   | Vite plugin for TypeScript path aliases |
+
+### Type Definitions
+
+| Technology       | Version | Purpose                    |
+| ---------------- | ------- | -------------------------- |
+| @types/node      | 22      | Node.js type definitions   |
+| @types/react     | 19.2.7  | React type definitions     |
+| @types/react-dom | 19.2.3  | React DOM type definitions |
+| @types/eslint    | 8.56.0  | ESLint type definitions    |
 
 ### Server Runtime
 
@@ -92,6 +109,7 @@ The `prepare` script will automatically run `husky install` to set up Git hooks.
 | Node                | 22 (Alpine in Docker) | Runtime environment                    |
 | @react-router/node  | 7.12.0                | Node.js adapter for React Router       |
 | @react-router/serve | 7.12.0                | Production server for React Router SSR |
+| isbot               | 5.1.31                | Bot detection middleware for SSR       |
 
 ## Project Structure
 
@@ -404,6 +422,108 @@ This ensures consistent code quality and formatting across the project before ch
 - Double quotes for strings
 - 80 character line width
 - 2-space indentation
+
+## State Management & Context API
+
+### Overview
+
+This project uses **React Context API** for state management, optimized with the `use-context-selector` library to prevent unnecessary component re-renders. This approach provides a lightweight, built-in solution without external state management libraries.
+
+### Why use-context-selector?
+
+By default, React Context causes all consumers to re-render whenever the context value changes, even if they only use a small part of it. The `use-context-selector` library solves this by:
+
+1. **Selective subscriptions** - Components only re-render when the specific value they select changes
+2. **Performance optimization** - Avoids cascading re-renders across your component tree
+3. **Minimal dependency** - Single, lightweight library with no additional dependencies
+4. **TypeScript support** - Full type safety out of the box
+
+### Implementation Pattern
+
+The project follows a consistent pattern for context management:
+
+**Step 1: Define the Context** (`app/context/layout/layout.tsx`)
+
+```tsx
+import { useState } from "react";
+import { createContext, useContextSelector } from "use-context-selector";
+
+const LayoutContext = createContext<{
+  sidebarOpen: boolean;
+  toggleSidebar: () => void;
+} | null>(null);
+
+export const LayoutProvider = ({ children }: { children: React.ReactNode }) => {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setSidebarOpen((prev) => !prev);
+  };
+
+  return (
+    <LayoutContext.Provider value={{ sidebarOpen, toggleSidebar }}>
+      {children}
+    </LayoutContext.Provider>
+  );
+};
+```
+
+**Step 2: Export Selector Hooks**
+
+Create separate hooks for each piece of state:
+
+```tsx
+// Selector for state
+export const useLayoutStateIsSidebarOpen = () =>
+  useContextSelector(LayoutContext, (value) => value?.sidebarOpen);
+
+// Selector for actions
+export const useLayoutActionsToggleSidebar = () =>
+  useContextSelector(LayoutContext, (value) => value?.toggleSidebar);
+```
+
+**Step 3: Use in Components**
+
+```tsx
+import {
+  useLayoutStateIsSidebarOpen,
+  useLayoutActionsToggleSidebar,
+} from "~/context/layout/layout";
+
+const Header = () => {
+  const sidebarOpen = useLayoutStateIsSidebarOpen();
+  const toggleSidebar = useLayoutActionsToggleSidebar();
+
+  return (
+    <div onClick={toggleSidebar}>{sidebarOpen ? "Close" : "Open"} Sidebar</div>
+  );
+};
+```
+
+### Best Practices
+
+1. **Separate State and Actions** - Create distinct hooks for state values and action functions
+2. **Type the Context** - Always provide TypeScript types for the context value
+3. **Handle Null Values** - Use optional chaining (`?.`) to handle cases where context might be null
+4. **Provider Wrapping** - Ensure the Provider wraps the entire component tree that needs access to the context
+5. **Granular Selectors** - Create specific selector hooks rather than exposing the entire context
+
+### Avoiding Re-render Issues
+
+**Common Mistake:**
+
+```tsx
+// ❌ DON'T - This creates a new object every render
+<MyContext.Provider value={{ state, action }}>
+```
+
+**Correct Approach:**
+
+```tsx
+// ✅ DO - Memoize or move value outside component
+const value = useMemo(() => ({ state, action }), [state, action]);
+<MyContext.Provider value={value}>
+```
 
 ## Configuration Files
 
