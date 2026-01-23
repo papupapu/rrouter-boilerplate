@@ -8,6 +8,9 @@ import {
 } from "react-router";
 
 import type { Route } from "./+types/root";
+
+import { LayoutProvider } from "./context/layout/layout";
+
 import "./app.scss";
 
 export const links: Route.LinksFunction = () => [
@@ -33,7 +36,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
+        <LayoutProvider>{children}</LayoutProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
