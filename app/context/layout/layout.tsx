@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { createContext, useContextSelector } from "use-context-selector";
 
 const LayoutContext = createContext<{
@@ -9,14 +9,17 @@ const LayoutContext = createContext<{
 export const LayoutProvider = ({ children }: { children: React.ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const toggleSidebar = () => {
+  const toggleSidebar = useCallback(() => {
     setSidebarOpen((prev) => !prev);
-  };
+  }, []);
+
+  const value = useMemo(
+    () => ({ sidebarOpen, toggleSidebar }),
+    [sidebarOpen, toggleSidebar]
+  );
 
   return (
-    <LayoutContext.Provider value={{ sidebarOpen, toggleSidebar }}>
-      {children}
-    </LayoutContext.Provider>
+    <LayoutContext.Provider value={value}>{children}</LayoutContext.Provider>
   );
 };
 
