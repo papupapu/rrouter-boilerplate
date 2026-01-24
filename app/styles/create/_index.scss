@@ -1,8 +1,11 @@
-@use "typography";
-@use "spacings";
-@use "colors";
-@use "borders";
-@use "statuses";
-@use "flex";
-@use "root";
-@use "sizes";
+/**
+ * CSS Generation from Design Tokens
+ * 
+ * This file orchestrates the generation of utility classes from the token system.
+ * Critical and non-critical styles are separated for performance optimization:
+ * - Critical styles are inlined in <head> by Beasties
+ * - Non-critical styles are lazy-loaded asynchronously
+ */
+
+@use "critical";
+@use "non-critical";

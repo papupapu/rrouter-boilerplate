@@ -1,0 +1,17 @@
+/**
+ * Critical CSS - Above the fold styles
+ * These styles are essential for initial page rendering and should be inlined
+ * in the <head> tag by Beasties during the build process.
+ * 
+ * Includes:
+ * - Layout structure (flexbox, grid)
+ * - Typography (fonts, base sizes)
+ * - Colors (text, background, borders for visible content)
+ * - Spacing for visible sections (header, hero, main content)
+ */
+
+@use "root";
+@use "typography";
+@use "flex";
+@use "colors";
+@use "spacings";

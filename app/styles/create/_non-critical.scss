@@ -1,0 +1,15 @@
+/**
+ * Non-Critical CSS - Below the fold styles
+ * These styles are loaded asynchronously after initial page render.
+ * 
+ * Includes:
+ * - Advanced color variants
+ * - Border styles
+ * - Status indicators
+ * - Size utilities for secondary content
+ * - Additional spacing utilities
+ */
+
+@use "borders";
+@use "statuses";
+@use "sizes";
