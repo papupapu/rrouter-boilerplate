@@ -1,51 +1,66 @@
-import Beasties from "beasties";
-
-let processor: InstanceType<typeof Beasties> | null = null;
-
-/**
- * Get or create Beasties processor instance
- * Only instantiate in production builds
- */
-function getProcessor(): InstanceType<typeof Beasties> | null {
-  if (import.meta.env.PROD) {
-    if (!processor) {
-      processor = new Beasties({
-        preload: "swap",
-        compress: true,
-      });
-    }
-    return processor;
-  }
-  return null;
-}
+import { readFileSync } from "fs";
+import { resolve } from "path";
 
 /**
- * Process HTML to extract and inline critical CSS
- * @param html - Complete HTML string (typically the shell)
- * @returns Processed HTML with critical CSS inlined
+ * Extract and inline critical CSS from the build output
+ * Instead of relying on Beasties' extraction, we directly read and inject the CSS
+ * This is simpler and more reliable for server-side rendering
  */
 export async function processCriticalCSS(html: string): Promise<string> {
-  const processor = getProcessor();
-
-  if (!processor) {
-    // In development, return HTML as-is
+  // Only process in production
+  if (!import.meta.env.PROD) {
     return html;
   }
 
   try {
-    // For now, skip processing to ensure page renders
-    // Beasties integration needs work on finding CSS files
-    return html;
+    // Find the CSS file in the build output
+    const cssPath = resolve(process.cwd(), "build/client/assets");
+    const fs = await import("fs/promises");
+    const files = await fs.readdir(cssPath);
+    const cssFile = files.find(
+      (f) => f.endsWith(".css") && f.startsWith("root-")
+    );
+
+    if (!cssFile) {
+      console.warn("[Critical CSS] ⚠️ No CSS file found in build output");
+      return html;
+    }
+
+    const cssFilePath = resolve(cssPath, cssFile);
+    const cssContent = readFileSync(cssFilePath, "utf-8");
+    const cssSizeKB = (cssContent.length / 1024).toFixed(2);
+
+    console.log(
+      `[Critical CSS] 📄 Found CSS file: ${cssFile} (${cssSizeKB} KB)`
+    );
+
+    // Extract only critical CSS rules (above-fold)
+    // For now, we'll inline the full CSS since it's relatively small (16KB)
+    // In a more sophisticated setup, we could parse and extract only critical rules
+    const criticalCSS = cssContent;
+
+    // Find the </head> tag and inject the critical CSS right before it
+    const headEndIndex = html.indexOf("</head>");
+    if (headEndIndex === -1) {
+      console.warn("[Critical CSS] ⚠️ No </head> tag found");
+      return html;
+    }
+
+    // Create the style tag with the critical CSS
+    const styleTag = `<style id="critical-css" type="text/css">${criticalCSS}</style>`;
+
+    // Inject right before </head>
+    const processed =
+      html.substring(0, headEndIndex) + styleTag + html.substring(headEndIndex);
+
+    console.log(
+      `[Critical CSS] ✅ Inlined ${cssSizeKB} KB of critical CSS (${(processed.length / 1024).toFixed(2)} KB total)`
+    );
+
+    return processed;
   } catch (error) {
-    console.error("[Beasties] ❌ Processing failed:", error);
+    console.error("[Critical CSS] ❌ Processing failed:", error);
     // Fallback: return original HTML if processing fails
     return html;
   }
-}
-
-/**
- * Reset processor (useful for testing)
- */
-export function resetProcessor(): void {
-  processor = null;
 }
