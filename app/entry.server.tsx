@@ -106,12 +106,21 @@ function handleDocumentRequestFunction(
                   shellSent = true;
 
                   // Process the buffered HTML
+                  console.log(
+                    "[SSR] Shell buffer complete, triggering Beasties processing..."
+                  );
                   processCriticalCSS(concatenated)
                     .then((processed) => {
+                      console.log(
+                        "[SSR] Shell processed, sending to client..."
+                      );
                       originalWrite(processed, encodingOrCallback, callback);
                     })
                     .catch((error: unknown) => {
-                      console.error("Critical CSS processing error:", error);
+                      console.error(
+                        "[SSR] Critical CSS processing error:",
+                        error
+                      );
                       // Fallback: send original HTML
                       originalWrite(concatenated, encodingOrCallback, callback);
                     });
