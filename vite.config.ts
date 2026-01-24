@@ -4,17 +4,21 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import { visualizer } from "rollup-plugin-visualizer";
 import { beasties } from "vite-plugin-beasties";
 
+const beastiesConfig = beasties({
+  preload: "swap",
+  compress: true,
+  external: true,
+  fonts: true,
+} as any);
+
 export default defineConfig({
   plugins: [
     reactRouter(),
     tsconfigPaths(),
-    beasties({
+    {
+      ...beastiesConfig,
       apply: "build",
-      preload: "swap",
-      compress: true,
-      external: true,
-      fonts: true,
-    }),
+    } as any,
     visualizer({
       open: true,
       gzipSize: true,
