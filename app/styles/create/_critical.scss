@@ -16,4 +16,6 @@
 @use "colors";
 @use "spacings";
 
+// Phase 1: Component imports are marked in their source files with /* @critical */ comments
+// Phase 2: These imports will be auto-generated from markers by the Vite plugin
 @use "../../components/layout/header/header";

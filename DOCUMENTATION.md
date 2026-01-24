@@ -389,17 +389,19 @@ This project implements **critical CSS inlining** to improve First Contentful Pa
 
 ### Marking Styles as Critical vs Non-Critical
 
-Component styles are marked by where they're imported:
+Component styles are marked using comment markers directly in the component Sass files. This decentralizes CSS classification and makes intent clear at the source.
 
 **Critical styles** (inlined in head):
 
-- Define in component files as normal Sass
-- Import into `app/styles/create/_critical.scss`
+- Add `/* @critical */` comment at the top of the component's Sass file
+- Styles will be inlined in the `<head>` during SSR
+- Example: [app/components/layout/header/header.scss](app/components/layout/header/header.scss)
 
 **Non-critical styles** (loaded asynchronously):
 
-- Define in component files as normal Sass
-- Import into `app/styles/create/_non-critical.scss`
+- Leave the component file unmarked (default behavior)
+- Or explicitly add `/* @non-critical */` for clarity
+- Styles load after initial page render
 
 **Example: Adding a Button component to critical CSS**
 
@@ -407,8 +409,6 @@ Create the component with its styles:
 
 ```tsx
 // app/components/button/Button.tsx
-import "./button.scss";
-
 export const Button = ({ children, ...props }) => (
   <button className="btn" {...props}>
     {children}
@@ -418,6 +418,7 @@ export const Button = ({ children, ...props }) => (
 
 ```scss
 // app/components/button/button.scss
+/* @critical */
 @use "~/styles/abstracts" as *;
 
 .btn {
@@ -435,27 +436,7 @@ export const Button = ({ children, ...props }) => (
 }
 ```
 
-Import into `_critical.scss` to mark it critical:
-
-```scss
-// app/styles/create/_critical.scss
-@use "root";
-@use "typography";
-@use "flex";
-@use "colors";
-@use "spacings";
-
-@use "../../components/layout/header/header";
-@use "../../components/button/button"; // Now critical
-```
-
-Or import into `_non-critical.scss` if it should load asynchronously:
-
-```scss
-// app/styles/create/_non-critical.scss
-@use "../../components/modal/modal";
-@use "../../components/button/button"; // Now non-critical
-```
+The `/* @critical */` marker indicates this component's styles should be inlined. During Phase 2, a Vite plugin will automatically scan for these markers and generate the necessary imports.
 
 ### Performance Benefits
 
@@ -495,18 +476,34 @@ GET / 200 - - 8.384 ms
 
 ### Best Practices
 
-1. **Keep Critical CSS Lean**: Only include styles for above-fold content (header, hero, main navigation)
+1. **Keep Critical CSS Lean**: Only mark styles for above-fold content (header, navigation, hero)
 2. **Use Design Tokens**: Reference CSS variables and token classes instead of hardcoding values
 3. **Component Organization**: Keep component styles colocated with components in the same folder
-4. **Modern Sass Syntax**: Use `@use` instead of `@import` to avoid deprecation warnings
-5. **Monitor Bundle Size**: Run `yarn analyze` regularly to track CSS growth
-6. **Test Both Routes**: Verify styles render correctly on different pages
-7. **Remove Redundant Component Imports**: Once a component's styles are imported into `_critical.scss` or `_non-critical.scss`, remove the direct `import './styles.scss'` from the component file itself. The styles are already bundled globally, and the component import is unnecessary and adds extra file I/O.
+4. **Mark at Source**: Add `/* @critical */` comments directly in component files, not in centralized imports
+5. **Modern Sass Syntax**: Use `@use` instead of `@import` to avoid deprecation warnings
+6. **Monitor Bundle Size**: Run `yarn analyze` regularly to track CSS growth
+7. **Test Both Routes**: Verify styles render correctly on different pages
+8. **Component Import Strategy**:
+   - ✅ **DO**: Styles included globally via centralized `_critical.scss` and `_non-critical.scss`
+   - ❌ **DON'T**: Import component styles directly in component files (redundant, adds file I/O)
 
-**Example**:
+**Example of correct setup**:
 
 ```tsx
-// ❌ DON'T - Redundant direct import
+// ✅ DO - Styles included via _critical.scss import (marked with /* @critical */)
+export const Button = ({ children, ...props }) => (
+  <button className="btn" {...props}>
+    {children}
+  </button>
+);
+
+// Styles are in: app/components/button/button.scss
+// File is marked: /* @critical */
+// Imported globally in: app/styles/create/_critical.scss
+```
+
+```tsx
+// ❌ DON'T - Direct import (redundant, already bundled globally)
 import "./button.scss";
 
 export const Button = ({ children, ...props }) => (
@@ -514,18 +511,6 @@ export const Button = ({ children, ...props }) => (
     {children}
   </button>
 );
-```
-
-```tsx
-// ✅ DO - Styles bundled via _critical.scss, no direct import needed
-export const Button = ({ children, ...props }) => (
-  <button className="btn" {...props}>
-    {children}
-  </button>
-);
-
-// Styles are already included in the bundle via:
-// app/styles/create/_critical.scss → @use "../../components/button/button";
 ```
 
 ### Troubleshooting
