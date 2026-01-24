@@ -1,7 +1,5 @@
 import { useLayoutActionsToggleSidebar } from "../../../context/layout/layout";
 
-import "./header.scss";
-
 const Header = () => {
   const toggleSidebar = useLayoutActionsToggleSidebar();
   return (
