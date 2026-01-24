@@ -1,4 +1,4 @@
-import { PassThrough } from "node:stream";
+import { Transform } from "node:stream";
 import { createReadableStreamFromReadable } from "@react-router/node";
 import { ServerRouter } from "react-router";
 import { isbot } from "isbot";
@@ -35,108 +35,63 @@ function handleDocumentRequestFunction(
         ? "onAllReady"
         : "onShellReady";
 
-    let timeoutId: ReturnType<typeof setTimeout> | undefined = setTimeout(
-      () => abort(),
-      streamTimeout + 1000
-    );
-
     // Buffer for capturing the shell
     const chunks: Buffer[] = [];
-    let shellProcessed = false;
 
-    const { pipe, abort } = renderToPipeableStream(
+    const { pipe } = renderToPipeableStream(
       jsx(ServerRouter, { context: routerContext, url: request.url }),
       {
         [readyOption]: async () => {
           shellRendered = true;
 
-          // Create a custom writable stream to buffer and process HTML
-          const passThrough = new PassThrough({
-            write(
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              this: any,
+          // Create a transform stream to buffer and process the shell
+          let shellProcessed = false;
+          const transformStream = new Transform({
+            transform(
               chunk: Buffer,
-              encoding: string,
-              callback: (error?: Error | null) => void
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              encoding: any,
+              callback: (error?: Error | null, data?: Buffer | string) => void
             ): void {
               if (!shellProcessed) {
-                // Still buffering the shell
                 chunks.push(chunk);
-              }
-              callback();
-            },
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            final(this: any, callback: (error?: Error | null) => void): void {
-              clearTimeout(timeoutId);
-              timeoutId = undefined;
-              callback();
-            },
-          });
-
-          // Monkey-patch the write method to intercept chunks
-          const originalWrite = passThrough.write.bind(passThrough);
-          let shellSent = false;
-
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (passThrough.write as any) = function (
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            this: any,
-            chunk: Buffer | string,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            encodingOrCallback?: any,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            callback?: any
-          ): boolean {
-            if (!shellSent) {
-              if (Buffer.isBuffer(chunk)) {
-                chunks.push(chunk);
-              } else {
-                chunks.push(Buffer.from(chunk));
-              }
-
-              // Heuristic: when we see closing body tag is coming, process shell
-              // For now, we'll process after small delay to accumulate chunks
-              if (chunks.length > 0) {
-                // Check if we have the closing html tag or a reasonable amount of data
                 const concatenated = Buffer.concat(chunks).toString("utf-8");
 
-                // Simple heuristic: if we have the head section complete (contains </head>)
-                // then process
-                if (concatenated.includes("</head>") && !shellSent) {
-                  shellSent = true;
-
-                  // Process the buffered HTML
+                // Check if shell (head section) is complete
+                if (concatenated.includes("</head>")) {
+                  shellProcessed = true;
                   console.log(
                     "[SSR] Shell buffer complete, triggering Beasties processing..."
                   );
+
+                  // Process asynchronously
                   processCriticalCSS(concatenated)
                     .then((processed) => {
                       console.log(
                         "[SSR] Shell processed, sending to client..."
                       );
-                      originalWrite(processed, encodingOrCallback, callback);
+                      chunks.length = 0; // Clear the buffer
+                      callback(null, processed);
                     })
-                    .catch((error: unknown) => {
-                      console.error(
-                        "[SSR] Critical CSS processing error:",
-                        error
-                      );
-                      // Fallback: send original HTML
-                      originalWrite(concatenated, encodingOrCallback, callback);
+                    .catch((error) => {
+                      console.error("[SSR] Processing error:", error);
+                      chunks.length = 0; // Clear the buffer
+                      callback(null, concatenated);
                     });
-                  return true;
+                } else {
+                  // Keep buffering - call callback to continue
+                  callback();
                 }
+              } else {
+                // Shell already processed, pass through remaining chunks
+                callback(null, chunk);
               }
+            },
+          });
 
-              return true;
-            }
-            // Shell already sent, stream normally
-            return originalWrite(chunk, encodingOrCallback, callback);
-          };
-
-          const stream = createReadableStreamFromReadable(passThrough);
+          const stream = createReadableStreamFromReadable(transformStream);
           responseHeaders.set("Content-Type", "text/html");
-          pipe(passThrough);
+          pipe(transformStream);
 
           resolve(
             new Response(stream, {

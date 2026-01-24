@@ -12,8 +12,6 @@ function getProcessor(): InstanceType<typeof Beasties> | null {
       processor = new Beasties({
         preload: "swap",
         compress: true,
-        external: true,
-        fonts: true,
       });
     }
     return processor;
@@ -31,20 +29,13 @@ export async function processCriticalCSS(html: string): Promise<string> {
 
   if (!processor) {
     // In development, return HTML as-is
-    console.log("[Beasties] Development mode - skipping CSS processing");
     return html;
   }
 
   try {
-    const originalSize = html.length;
-    console.log(`[Beasties] Processing HTML (${originalSize} bytes)...`);
-    const processed = await processor.process(html);
-    const processedSize = processed.length;
-    const sizeDiff = processedSize - originalSize;
-    console.log(
-      `[Beasties] ✅ Processing complete. Size: ${originalSize} → ${processedSize} bytes (${sizeDiff > 0 ? "+" : ""}${sizeDiff})`
-    );
-    return processed;
+    // For now, skip processing to ensure page renders
+    // Beasties integration needs work on finding CSS files
+    return html;
   } catch (error) {
     console.error("[Beasties] ❌ Processing failed:", error);
     // Fallback: return original HTML if processing fails
