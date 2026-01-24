@@ -12,7 +12,7 @@ interface RouterContext {
   isSpaMode?: boolean;
 }
 
-export function handleRequest(
+function handleDocumentRequestFunction(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
@@ -150,4 +150,5 @@ export function handleRequest(
   });
 }
 
+export default handleDocumentRequestFunction;
 export { streamTimeout };
