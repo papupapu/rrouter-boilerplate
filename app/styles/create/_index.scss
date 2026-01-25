@@ -1,11 +1,11 @@
 /**
- * CSS Generation from Design Tokens
+ * CSS Generation from Design Tokens - CRITICAL ONLY
  * 
- * This file orchestrates the generation of utility classes from the token system.
- * Critical and non-critical styles are separated for performance optimization:
- * - Critical abstracts + components are inlined in <head> by Beasties
- * - Non-critical utilities + components are lazy-loaded asynchronously
+ * This is the main entry point for the critical CSS bundle.
+ * Only critical styles are imported here and inlined in <head>.
+ * 
+ * Non-critical styles are imported separately in _non-critical-entry.scss
+ * and lazy-loaded asynchronously.
  */
 
 @use "critical";
-@use "non-critical";

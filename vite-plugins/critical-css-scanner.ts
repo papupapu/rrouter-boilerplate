@@ -164,6 +164,69 @@ export function criticalCssScanner(): Plugin {
       }
     },
 
+    // Hook into the write bundle to split CSS files
+    async writeBundle(options, bundle) {
+      // Only process during build
+      if (config?.command !== "build") {
+        return;
+      }
+
+      try {
+        // Find the main CSS file (root-*.css)
+        let mainCssFile = null;
+        for (const [, file] of Object.entries(bundle)) {
+          if (
+            file.type === "asset" &&
+            file.fileName.startsWith("root-") &&
+            file.fileName.endsWith(".css")
+          ) {
+            mainCssFile = file;
+            break;
+          }
+        }
+
+        if (!mainCssFile || typeof mainCssFile.source !== "string") {
+          console.warn(
+            "[Critical CSS Scanner] ⚠️ No main CSS file found in bundle"
+          );
+          return;
+        }
+
+        const fullCss = mainCssFile.source;
+        const { critical, nonCritical } = splitCSSByComponents(
+          fullCss,
+          scannedFiles
+        );
+
+        // Update the main CSS file to contain only critical CSS
+        mainCssFile.source = critical;
+
+        // Create a separate file for non-critical CSS
+        const nonCriticalFileName = mainCssFile.fileName.replace(
+          "root-",
+          "non-critical-"
+        );
+        bundle[nonCriticalFileName] = {
+          type: "asset",
+          fileName: nonCriticalFileName,
+          source: nonCritical,
+        };
+
+        const criticalSize = (critical.length / 1024).toFixed(2);
+        const nonCriticalSize = (nonCritical.length / 1024).toFixed(2);
+
+        console.log("[Critical CSS Scanner] 📊 CSS split completed:");
+        console.log(
+          `  Critical: ${criticalSize} KB | Non-critical: ${nonCriticalSize} KB`
+        );
+      } catch (error) {
+        console.warn(
+          "[Critical CSS Scanner] ⚠️ Failed to split CSS:",
+          error instanceof Error ? error.message : String(error)
+        );
+      }
+    },
+
     // Cleanup watcher on close
     closeBundle() {
       if (fileWatcher) {
@@ -172,6 +235,55 @@ export function criticalCssScanner(): Plugin {
       }
     },
   };
+}
+
+/**
+ * Split CSS into critical and non-critical based on components
+ * This is a simple approach that extracts CSS rules by component class names
+ */
+function splitCSSByComponents(
+  fullCss: string,
+  scannedFiles: ScannedFiles
+): { critical: string; nonCritical: string } {
+  // For now, we'll use a simple approach:
+  // Since we have two separate Sass entry points (_index.scss for critical,
+  // _non-critical-entry.scss for non-critical), we can split the CSS
+  // by looking for component-specific selectors.
+  //
+  // However, since Sass compiles everything together initially,
+  // we need a different strategy. The best approach is to track
+  // which component files contributed to which parts of the CSS.
+  //
+  // For this MVP, we'll keep everything in the main CSS for now
+  // and just create an empty non-critical CSS file as a placeholder.
+  // The real split will happen when we can separate the Sass compilation.
+
+  const nonCriticalComponents = scannedFiles.nonCritical;
+
+  // Simple heuristic: extract rules that mention non-critical components
+  let nonCritical = "";
+  let critical = fullCss;
+
+  // Extract footer-related styles (basic pattern matching)
+  if (nonCriticalComponents.some((f) => f.includes("footer"))) {
+    const footerRegex = /\.footer\s*\{[^}]*\}|\.footer[^\s]*\s*\{[^}]*\}/g;
+    const matches = critical.match(footerRegex) || [];
+    if (matches.length > 0) {
+      nonCritical += matches.join("\n");
+      critical = critical.replace(footerRegex, "");
+    }
+  }
+
+  // Remove excess whitespace
+  critical = critical.replace(/\n\s*\n/g, "\n").trim();
+  nonCritical = nonCritical.replace(/\n\s*\n/g, "\n").trim();
+
+  // If no non-critical CSS was extracted, add a comment
+  if (!nonCritical) {
+    nonCritical = "/* Non-critical CSS (async-loaded) - currently empty */\n";
+  }
+
+  return { critical, nonCritical };
 }
 
 /**
