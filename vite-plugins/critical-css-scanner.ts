@@ -26,7 +26,6 @@ interface ScannedFiles {
 
 // Regex patterns for marker detection
 const CRITICAL_FILE_MARKER = /^[\s/]*\/\*\s*@critical\s*\*\//m;
-const NON_CRITICAL_FILE_MARKER = /^[\s/]*\/\*\s*@non-critical\s*\*\//m;
 
 export function criticalCssScanner(): Plugin {
   let scannedFiles: ScannedFiles = { critical: [], nonCritical: [] };
@@ -155,14 +154,22 @@ async function scanDirectory(dir: string): Promise<ScannedFiles> {
         if (entry.isDirectory()) {
           await walk(fullPath);
         } else if (entry.isFile() && entry.name.endsWith(".scss")) {
+          // Skip app.scss itself (it's the root stylesheet)
+          if (entry.name === "app.scss") {
+            continue;
+          }
+
           try {
             const content = await fs.readFile(fullPath, "utf-8");
             // Compute relative path from app/ directory
             const relativePath = path.relative(appRootPath, fullPath);
 
             if (CRITICAL_FILE_MARKER.test(content)) {
+              // Explicitly marked as critical
               result.critical.push(relativePath);
-            } else if (NON_CRITICAL_FILE_MARKER.test(content)) {
+            } else {
+              // Default: treat all unmarked files as non-critical
+              // This includes both explicitly marked @non-critical and unmarked files
               result.nonCritical.push(relativePath);
             }
           } catch (err) {
