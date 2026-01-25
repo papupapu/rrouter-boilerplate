@@ -1,4 +1,4 @@
-import { Plugin, ResolvedConfig } from "vite";
+import type { Plugin, ResolvedConfig } from "vite";
 import { promises as fs } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -17,7 +17,9 @@ import { watch } from "fs";
  * Files are auto-generated at build time and never committed to git.
  * Only template files (_*.template.scss) are tracked in version control.
  *
- * Only runs during production builds to avoid dev server overhead.
+ * Runs during both dev and build modes:
+ * - Production builds: Scans and generates once
+ * - Development mode: Scans on startup + watches for file changes (HMR support)
  */
 
 interface ScannedFiles {
