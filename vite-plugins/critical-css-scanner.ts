@@ -148,7 +148,8 @@ export function criticalCssScanner(): Plugin {
               filename &&
               filename.endsWith(".scss") &&
               !filename.includes("node_modules") &&
-              !filename.includes(".git")
+              !filename.includes(".git") &&
+              !filename.includes("styles/create") // Exclude generated files to prevent infinite loop
             ) {
               scheduleRegenerate();
             }
