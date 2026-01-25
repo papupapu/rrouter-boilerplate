@@ -1,7 +1,8 @@
-import { Plugin } from "vite";
+import { Plugin, ResolvedConfig } from "vite";
 import { promises as fs } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { watch } from "fs";
 
 /**
  * Critical CSS Scanner Plugin - Phase 2.5 Auto-Generated Hybrid Approach
@@ -31,10 +32,71 @@ export function criticalCssScanner(): Plugin {
   let scannedFiles: ScannedFiles = { critical: [], nonCritical: [] };
   let appRoot = "";
   let stylesDir = "";
+  let config: ResolvedConfig | null = null;
+  let fileWatcher: ReturnType<typeof watch> | null = null;
+  let regenerateTimer: ReturnType<typeof setTimeout> | null = null;
+
+  // Helper to regenerate files
+  async function regenerateImports() {
+    // Scan for SCSS files with markers
+    scannedFiles = await scanDirectory(appRoot);
+
+    // Read templates
+    const criticalTemplate = await readTemplate("_critical", stylesDir);
+    const nonCriticalTemplate = await readTemplate("_non-critical", stylesDir);
+
+    // Generate files from templates + detected markers
+    const criticalContent = generateFromTemplate(
+      criticalTemplate,
+      scannedFiles.critical,
+      appRoot,
+      stylesDir
+    );
+    const nonCriticalContent = generateFromTemplate(
+      nonCriticalTemplate,
+      scannedFiles.nonCritical,
+      appRoot,
+      stylesDir
+    );
+
+    // Write generated files
+    await fs.writeFile(path.join(stylesDir, "_critical.scss"), criticalContent);
+    await fs.writeFile(
+      path.join(stylesDir, "_non-critical.scss"),
+      nonCriticalContent
+    );
+
+    // Log results
+    const totalFiles =
+      scannedFiles.critical.length + scannedFiles.nonCritical.length;
+    console.log(
+      `[Critical CSS Scanner] ✅ Auto-generated critical CSS imports`
+    );
+    console.log(
+      `[Critical CSS Scanner]    Found ${scannedFiles.critical.length} critical, ${scannedFiles.nonCritical.length} non-critical, ${totalFiles} total components\n`
+    );
+
+    if (scannedFiles.critical.length > 0) {
+      console.log("[Critical CSS Scanner] 📌 Critical components:");
+      scannedFiles.critical.forEach((file) => {
+        console.log(`  ✓ ${file}`);
+      });
+      console.log("");
+    }
+
+    if (scannedFiles.nonCritical.length > 0) {
+      console.log("[Critical CSS Scanner] 📦 Non-critical components:");
+      scannedFiles.nonCritical.forEach((file) => {
+        console.log(`  ✓ ${file}`);
+      });
+      console.log("");
+    }
+  }
 
   return {
     name: "critical-css-scanner",
-    apply: "build", // Only run during production builds
+    // Run during both dev and build to ensure consistency
+    // Scans for markers and generates imports in both modes
 
     async config() {
       // Determine paths
@@ -50,64 +112,60 @@ export function criticalCssScanner(): Plugin {
         appRoot
       );
 
-      // Scan for SCSS files with markers
-      scannedFiles = await scanDirectory(appRoot);
+      // Initial generation
+      await regenerateImports();
+    },
 
-      // Read templates
-      const criticalTemplate = await readTemplate("_critical", stylesDir);
-      const nonCriticalTemplate = await readTemplate(
-        "_non-critical",
-        stylesDir
-      );
+    // Set up file watcher in dev mode
+    configResolved(resolvedConfig) {
+      config = resolvedConfig;
 
-      // Generate files from templates + detected markers
-      const criticalContent = generateFromTemplate(
-        criticalTemplate,
-        scannedFiles.critical,
-        appRoot,
-        stylesDir
-      );
-      const nonCriticalContent = generateFromTemplate(
-        nonCriticalTemplate,
-        scannedFiles.nonCritical,
-        appRoot,
-        stylesDir
-      );
+      // Only set up watcher in dev mode
+      if (config.command === "serve") {
+        // Watch app directory for new SCSS files
+        const appPath = path.resolve(
+          path.dirname(fileURLToPath(import.meta.url)),
+          "..",
+          "app"
+        );
 
-      // Write generated files
-      await fs.writeFile(
-        path.join(stylesDir, "_critical.scss"),
-        criticalContent
-      );
-      await fs.writeFile(
-        path.join(stylesDir, "_non-critical.scss"),
-        nonCriticalContent
-      );
+        // Debounce regeneration to avoid multiple rapid calls
+        const scheduleRegenerate = () => {
+          if (regenerateTimer) clearTimeout(regenerateTimer);
+          regenerateTimer = setTimeout(async () => {
+            console.log(
+              "[Critical CSS Scanner] 📝 Detected SCSS file change, regenerating imports..."
+            );
+            await regenerateImports();
+          }, 300); // 300ms debounce to ensure file is fully written
+        };
 
-      // Log results
-      const totalFiles =
-        scannedFiles.critical.length + scannedFiles.nonCritical.length;
-      console.log(
-        `[Critical CSS Scanner] ✅ Auto-generated critical CSS imports`
-      );
-      console.log(
-        `[Critical CSS Scanner]    Found ${scannedFiles.critical.length} critical, ${scannedFiles.nonCritical.length} non-critical, ${totalFiles} total components\n`
-      );
+        fileWatcher = watch(
+          appPath,
+          { recursive: true },
+          (eventType, filename) => {
+            if (
+              filename &&
+              filename.endsWith(".scss") &&
+              !filename.includes("node_modules") &&
+              !filename.includes(".git")
+            ) {
+              scheduleRegenerate();
+            }
+          }
+        );
 
-      if (scannedFiles.critical.length > 0) {
-        console.log("[Critical CSS Scanner] 📌 Critical components:");
-        scannedFiles.critical.forEach((file) => {
-          console.log(`  ✓ ${file}`);
-        });
-        console.log("");
+        console.log(
+          "[Critical CSS Scanner] 👀 Watching app directory for SCSS changes"
+        );
       }
+    },
 
-      if (scannedFiles.nonCritical.length > 0) {
-        console.log("[Critical CSS Scanner] 📦 Non-critical components:");
-        scannedFiles.nonCritical.forEach((file) => {
-          console.log(`  ✓ ${file}`);
-        });
-        console.log("");
+    // Cleanup watcher on close
+    closeBundle() {
+      if (fileWatcher) {
+        fileWatcher.close();
+        console.log("[Critical CSS Scanner] 🛑 File watcher closed");
       }
     },
   };
