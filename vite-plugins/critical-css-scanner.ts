@@ -4,14 +4,17 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 /**
- * Critical CSS Scanner Plugin
+ * Critical CSS Scanner Plugin - Phase 2.5 Auto-Generated Hybrid Approach
  *
  * Scans all .scss files in the app directory for marker comments
- * and automatically generates module files for critical/non-critical styles.
+ * and automatically generates centralized imports from templates.
  *
- * Generated modules:
- * - .vite-cache/critical.scss (inlined styles)
- * - .vite-cache/non-critical.scss (async loaded styles)
+ * Generated files (written to actual .scss files, not virtual):
+ * - app/styles/create/_critical.scss (inlined styles)
+ * - app/styles/create/_non-critical.scss (async loaded styles)
+ *
+ * Files are auto-generated at build time and never committed to git.
+ * Only template files (_*.template.scss) are tracked in version control.
  *
  * Only runs during production builds to avoid dev server overhead.
  */
@@ -28,7 +31,7 @@ const NON_CRITICAL_FILE_MARKER = /^[\s/]*\/\*\s*@non-critical\s*\*\//m;
 export function criticalCssScanner(): Plugin {
   let scannedFiles: ScannedFiles = { critical: [], nonCritical: [] };
   let appRoot = "";
-  let cacheDir = "";
+  let stylesDir = "";
 
   return {
     name: "critical-css-scanner",
@@ -38,61 +41,96 @@ export function criticalCssScanner(): Plugin {
       // Determine paths
       const __dirname = path.dirname(fileURLToPath(import.meta.url));
       appRoot = path.resolve(__dirname, "..", "app");
-      cacheDir = path.resolve(__dirname, "..", ".vite-cache");
+      stylesDir = path.resolve(appRoot, "styles", "create");
 
-      // Ensure cache directory exists
-      await fs.mkdir(cacheDir, { recursive: true });
+      // Ensure styles/create directory exists
+      await fs.mkdir(stylesDir, { recursive: true });
 
-      console.log("[Critical CSS Scanner] Scanning for markers in:", appRoot);
+      console.log(
+        "[Critical CSS Scanner] 🔍 Scanning for markers in:",
+        appRoot
+      );
 
       // Scan for SCSS files with markers
       scannedFiles = await scanDirectory(appRoot);
 
-      // Generate cache files with component imports
+      // Read templates
+      const criticalTemplate = await readTemplate("_critical", stylesDir);
+      const nonCriticalTemplate = await readTemplate(
+        "_non-critical",
+        stylesDir
+      );
+
+      // Generate files from templates + detected markers
+      const criticalContent = generateFromTemplate(
+        criticalTemplate,
+        scannedFiles.critical,
+        appRoot,
+        stylesDir
+      );
+      const nonCriticalContent = generateFromTemplate(
+        nonCriticalTemplate,
+        scannedFiles.nonCritical,
+        appRoot,
+        stylesDir
+      );
+
+      // Write generated files
       await fs.writeFile(
-        path.join(cacheDir, "critical.scss"),
-        generateCriticalScss(scannedFiles.critical, appRoot)
+        path.join(stylesDir, "_critical.scss"),
+        criticalContent
       );
       await fs.writeFile(
-        path.join(cacheDir, "non-critical.scss"),
-        generateNonCriticalScss(scannedFiles.nonCritical, appRoot)
+        path.join(stylesDir, "_non-critical.scss"),
+        nonCriticalContent
       );
 
       // Log results
       const totalFiles =
         scannedFiles.critical.length + scannedFiles.nonCritical.length;
       console.log(
-        `[Critical CSS Scanner] ✅ Found ${scannedFiles.critical.length} critical, ${scannedFiles.nonCritical.length} non-critical, ${totalFiles} total component files\n`
+        `[Critical CSS Scanner] ✅ Auto-generated critical CSS imports`
+      );
+      console.log(
+        `[Critical CSS Scanner]    Found ${scannedFiles.critical.length} critical, ${scannedFiles.nonCritical.length} non-critical, ${totalFiles} total components\n`
       );
 
       if (scannedFiles.critical.length > 0) {
-        console.log("[Critical CSS Scanner] Critical components:");
+        console.log("[Critical CSS Scanner] 📌 Critical components:");
         scannedFiles.critical.forEach((file) => {
-          console.log(`  • ${file}`);
+          console.log(`  ✓ ${file}`);
         });
         console.log("");
       }
 
       if (scannedFiles.nonCritical.length > 0) {
-        console.log("[Critical CSS Scanner] Non-critical components:");
+        console.log("[Critical CSS Scanner] 📦 Non-critical components:");
         scannedFiles.nonCritical.forEach((file) => {
-          console.log(`  • ${file}`);
+          console.log(`  ✓ ${file}`);
         });
         console.log("");
       }
     },
-
-    // Intercept imports to ensure cache files are resolved correctly
-    async resolveId(id) {
-      if (
-        id.includes(".vite-cache/critical.scss") ||
-        id.includes(".vite-cache/non-critical.scss")
-      ) {
-        // Let Vite handle the actual file resolution
-        return undefined;
-      }
-    },
   };
+}
+
+/**
+ * Read template file if it exists, return empty string if not
+ */
+async function readTemplate(
+  filename: string,
+  templateDir: string
+): Promise<string> {
+  const templatePath = path.join(templateDir, `${filename}.template.scss`);
+  try {
+    return await fs.readFile(templatePath, "utf-8");
+  } catch {
+    // Template doesn't exist yet (shouldn't happen in normal operation)
+    console.warn(
+      `[Critical CSS Scanner] ⚠️  Template not found: ${templatePath}`
+    );
+    return "";
+  }
 }
 
 /**
@@ -100,6 +138,7 @@ export function criticalCssScanner(): Plugin {
  */
 async function scanDirectory(dir: string): Promise<ScannedFiles> {
   const result: ScannedFiles = { critical: [], nonCritical: [] };
+  const appRootPath = dir; // Capture appRoot in closure
 
   async function walk(dirPath: string) {
     try {
@@ -108,7 +147,7 @@ async function scanDirectory(dir: string): Promise<ScannedFiles> {
       for (const entry of entries) {
         const fullPath = path.join(dirPath, entry.name);
 
-        // Skip styles directory (contains abstracts, not components)
+        // Skip styles directory (contains abstracts and templates, not components)
         if (entry.name === "styles") {
           continue;
         }
@@ -118,10 +157,8 @@ async function scanDirectory(dir: string): Promise<ScannedFiles> {
         } else if (entry.isFile() && entry.name.endsWith(".scss")) {
           try {
             const content = await fs.readFile(fullPath, "utf-8");
-            const relativePath = path.relative(
-              path.join(dirPath, ".."),
-              fullPath
-            );
+            // Compute relative path from app/ directory
+            const relativePath = path.relative(appRootPath, fullPath);
 
             if (CRITICAL_FILE_MARKER.test(content)) {
               result.critical.push(relativePath);
@@ -149,69 +186,55 @@ async function scanDirectory(dir: string): Promise<ScannedFiles> {
 }
 
 /**
- * Generate critical.scss content
- * Includes abstracts (always) + critical components (from markers)
+ * Generate content from template
+ * Preserves everything before "AUTO-GENERATED" marker, appends detected imports
  */
-function generateCriticalScss(
-  criticalFiles: string[],
-  appRoot: string
+function generateFromTemplate(
+  template: string,
+  detectedFiles: string[],
+  appRoot: string,
+  baseDir: string
 ): string {
-  const baseDir = path.join(appRoot, "styles", "create");
-  const lines: string[] = [
-    "// AUTO-GENERATED by critical-css-scanner plugin",
-    "// ⚠️  DO NOT EDIT - Changes will be overwritten during build",
-    "",
-    "// Abstract tokens (always included for styling foundation)",
-    '@use "root";',
-    '@use "typography";',
-    '@use "flex";',
-    '@use "colors";',
-    '@use "spacings";',
-    "",
-  ];
+  // Find the AUTO-GENERATED marker
+  const autoGenMarkerIndex = template.indexOf(
+    "// AUTO-GENERATED SECTION BELOW"
+  );
 
-  if (criticalFiles.length > 0) {
-    lines.push(
-      "// Critical components (detected from /* @critical */ markers)"
-    );
-    for (const file of criticalFiles) {
-      const relativePath = path.relative(baseDir, path.join(appRoot, file));
-      const importPath = "./" + relativePath.replace(/\\/g, "/");
-      lines.push(`@use "${importPath}";`);
+  // Extract template header (everything up to the marker)
+  const templateHeader =
+    autoGenMarkerIndex > -1
+      ? template.substring(0, autoGenMarkerIndex)
+      : template;
+
+  // Build the generated section with imports
+  const generatedLines: string[] = [];
+
+  if (detectedFiles.length > 0) {
+    for (const file of detectedFiles) {
+      // file is like "components/layout/header/header.scss"
+      // baseDir is like "...app/styles/create"
+      // appRoot is like "...app"
+
+      // Remove .scss extension to get the module path
+      const fileWithoutExtension = file.replace(/\.scss$/, "");
+
+      // Compute relative path from baseDir to the component file
+      // file is relative to app/, so we need: app/components/layout/header/header
+      const componentFullPath = path.join(appRoot, fileWithoutExtension);
+      const relativePath = path.relative(baseDir, componentFullPath);
+
+      // Normalize path separators for Sass (@use always uses /)
+      const importPath = relativePath.replace(/\\/g, "/");
+
+      generatedLines.push(`@use "${importPath}";`);
     }
-    lines.push("");
   }
 
-  return lines.join("\n");
-}
-
-/**
- * Generate cache-non-critical.scss content
- * Includes ONLY non-critical components (utilities are in base _non-critical.scss)
- */
-function generateNonCriticalScss(
-  nonCriticalFiles: string[],
-  appRoot: string
-): string {
-  const baseDir = path.join(appRoot, "styles", "create");
-  const lines: string[] = [
-    "// AUTO-GENERATED by critical-css-scanner plugin",
-    "// ⚠️  DO NOT EDIT - Changes will be overwritten during build",
-    "",
-  ];
-
-  if (nonCriticalFiles.length > 0) {
-    lines.push("// Non-critical components (loaded asynchronously)");
-    for (const file of nonCriticalFiles) {
-      const relativePath = path.relative(baseDir, path.join(appRoot, file));
-      const importPath = "./" + relativePath.replace(/\\/g, "/");
-      lines.push(`@use "${importPath}";`);
-    }
-    lines.push("");
+  // Combine template header + generated section
+  if (generatedLines.length > 0) {
+    return templateHeader + generatedLines.join("\n") + "\n";
   } else {
-    lines.push("// (No non-critical components currently)");
-    lines.push("");
+    // If no components detected, return just the template header
+    return templateHeader;
   }
-
-  return lines.join("\n");
 }

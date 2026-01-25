@@ -389,19 +389,20 @@ This project implements **critical CSS inlining** to improve First Contentful Pa
 
 ### Marking Styles as Critical vs Non-Critical
 
-Component styles are marked using comment markers directly in the component Sass files. This decentralizes CSS classification and makes intent clear at the source.
+Component styles are marked using comment markers directly in the component Sass files. The build system **automatically detects these markers** and generates centralized imports—no manual import management needed.
 
 **Critical styles** (inlined in head):
 
-- Add `/* @critical */` comment at the top of the component's Sass file
-- Styles will be inlined in the `<head>` during SSR
+- Add `/* @critical */` comment at the top of component's Sass file
+- Build system auto-detects and includes in inline CSS
+- No need to manually add imports to `_critical.scss`
 - Example: [app/components/layout/header/header.scss](app/components/layout/header/header.scss)
 
 **Non-critical styles** (loaded asynchronously):
 
-- Leave the component file unmarked (default behavior)
-- Or explicitly add `/* @non-critical */` for clarity
-- Styles load after initial page render
+- Leave unmarked (default behavior), OR explicitly add `/* @non-critical */` for clarity
+- Build system auto-detects and excludes from inline CSS
+- Loads after initial page render
 
 **Example: Adding a Button component to critical CSS**
 
@@ -436,7 +437,56 @@ export const Button = ({ children, ...props }) => (
 }
 ```
 
-The `/* @critical */` marker indicates this component's styles should be inlined. During Phase 2, a Vite plugin will automatically scan for these markers and generate the necessary imports.
+That's it! When you run `yarn build`, the plugin detects the `/* @critical */` marker and automatically includes this component's styles in the inline CSS. No additional configuration needed.
+
+### How Auto-Generation Works
+
+During the build process, the `critical-css-scanner` plugin:
+
+1. **Scans** all `.scss` files in `app/` for `/* @critical */` and `/* @non-critical */` markers
+2. **Reads** template files that define the structure and abstracts
+3. **Generates** [app/styles/create/\_critical.scss](app/styles/create/_critical.scss) with:
+   - All abstracts and foundational imports from the template
+   - All detected critical component imports
+4. **Generates** [app/styles/create/\_non-critical.scss](app/styles/create/_non-critical.scss) similarly
+5. **Logs** findings to console for verification (shows what was detected)
+6. **Inlines** critical CSS as before—CSS processor reads the generated file
+
+**Generated files are auto-created and never committed to git.** Only template files (`_critical.template.scss`, `_non-critical.template.scss`) are tracked.
+
+### Troubleshooting Auto-Generation
+
+**Q: CSS didn't change after adding `/* @critical */` marker**
+**A**:
+
+1. Check console output during `yarn build` to see if marker was detected
+2. Verify file is in `app/` directory (not `app/styles/`)
+3. Ensure marker is at file start with exact syntax: `/* @critical */`
+4. Run `yarn build` again (files are regenerated each build)
+5. Look for console messages like: `[Critical CSS Scanner] ✅ Found 1 critical component:`
+
+**Q: Can I manually edit `_critical.scss` or `_non-critical.scss`?**
+**A**: No—these files are auto-generated and will be overwritten on the next build. To change what's included, add or remove the `/* @critical */` marker in your component file instead.
+
+**Q: I don't see my component in the generated file**
+**A**:
+
+1. Check that the `/* @critical */` marker is at the very top of the file
+2. Check that the file ends in `.scss` (not `.css` or other extension)
+3. Check that the file is in the `app/` directory hierarchy
+4. Run `yarn build` and check the console output for any errors
+5. Verify the file path is accessible and readable
+
+**Q: How do I verify what was auto-generated?**
+**A**: Check the console output during `yarn build`. You'll see:
+
+```
+[Critical CSS Scanner] ✅ Found N critical components:
+  • component1/component1.scss
+  • component2/component2.scss
+```
+
+You can also inspect the locally generated `app/styles/create/_critical.scss` file (it's not in git, but visible in your local project).
 
 ### Performance Benefits
 
@@ -476,21 +526,23 @@ GET / 200 - - 8.384 ms
 
 ### Best Practices
 
-1. **Keep Critical CSS Lean**: Only mark styles for above-fold content (header, navigation, hero)
+1. **Mark Critical Components Only**: Add `/* @critical */` only to above-fold components (header, navigation, hero)
 2. **Use Design Tokens**: Reference CSS variables and token classes instead of hardcoding values
-3. **Component Organization**: Keep component styles colocated with components in the same folder
-4. **Mark at Source**: Add `/* @critical */` comments directly in component files, not in centralized imports
+3. **Keep Components Colocated**: Store component styles in the same folder as the component (e.g., `app/components/header/header.scss`)
+4. **Marker Placement**: Add `/* @critical */` at the very start of the `.scss` file, before any other content
 5. **Modern Sass Syntax**: Use `@use` instead of `@import` to avoid deprecation warnings
 6. **Monitor Bundle Size**: Run `yarn analyze` regularly to track CSS growth
-7. **Test Both Routes**: Verify styles render correctly on different pages
-8. **Component Import Strategy**:
-   - ✅ **DO**: Styles included globally via centralized `_critical.scss` and `_non-critical.scss`
-   - ❌ **DON'T**: Import component styles directly in component files (redundant, adds file I/O)
+7. **Test Multiple Routes**: Verify styles render correctly on different pages (home, about, post, etc.)
+8. **Component Workflow** (Important!):
+   - ✅ **DO**: Mark components with `/* @critical */` at the file source
+   - ✅ **DO**: Let the plugin auto-detect and auto-generate imports
+   - ❌ **DON'T**: Manually add imports to `_critical.scss` (plugin will overwrite)
+   - ❌ **DON'T**: Import component styles directly in component files (redundant, already bundled globally)
 
 **Example of correct setup**:
 
 ```tsx
-// ✅ DO - Styles included via _critical.scss import (marked with /* @critical */)
+// ✅ DO - Just use the marker, plugin handles the rest
 export const Button = ({ children, ...props }) => (
   <button className="btn" {...props}>
     {children}
@@ -498,12 +550,12 @@ export const Button = ({ children, ...props }) => (
 );
 
 // Styles are in: app/components/button/button.scss
-// File is marked: /* @critical */
-// Imported globally in: app/styles/create/_critical.scss
+// File has marker: /* @critical */
+// Plugin auto-detects and generates import in _critical.scss
 ```
 
 ```tsx
-// ❌ DON'T - Direct import (redundant, already bundled globally)
+// ❌ DON'T - Direct import (redundant, already bundled globally via plugin)
 import "./button.scss";
 
 export const Button = ({ children, ...props }) => (
@@ -536,34 +588,36 @@ ls -la build/client/assets/*.css
 
 **This is expected**: CSS inlining only runs in production (`import.meta.env.PROD` check). In development, CSS loads normally for faster iteration.
 
-### Future Improvements
+### Implementation Details
 
-**Decentralized Critical CSS Marking** (Phase 2 Enhancement)
+**Template Files** (tracked in git):
 
-The current implementation requires managing critical vs non-critical imports in centralized files (`app/styles/create/_critical.scss` and `app/styles/create/_non-critical.scss`). This approach can become confusing and counter-intuitive as the project grows.
+- [app/styles/create/\_critical.template.scss](app/styles/create/_critical.template.scss) - Defines abstracts and structure
+- [app/styles/create/\_non-critical.template.scss](app/styles/create/_non-critical.template.scss) - Defines utilities and structure
 
-**Proposed Solution**: Implement a decorator or comment-based system to mark CSS as critical directly where it's defined:
+**Generated Files** (auto-created, not in git):
 
-```scss
-// app/components/button/button.scss
-/* @critical */ // Mark this style as critical
-.btn {
-  padding: var(--dim--200);
-  background-color: var(--c-bg--brand);
-  // ...
-}
-```
+- `app/styles/create/_critical.scss` - Auto-generated from template + detected markers
+- `app/styles/create/_non-critical.scss` - Auto-generated from template + detected markers
 
-This would allow Beasties to extract critical styles automatically during the build phase, eliminating the need for manual centralized imports.
+**Plugin** (Vite):
 
-**Benefits**:
+- [vite-plugins/critical-css-scanner.ts](vite-plugins/critical-css-scanner.ts) - Scans for markers and generates imports at build time
 
-- CSS marked where it's defined (colocated with components)
-- Clearer intent and easier to maintain
-- Less manual plumbing required
-- More scalable as project grows
+**Processor** (SSR):
 
-**Status**: Documented for Phase 2 evaluation. Requires investigation into Beasties integration and AST parsing for CSS comments.
+- [app/utils/beasties-processor.ts](app/utils/beasties-processor.ts) - Reads generated CSS and inlines in HTML
+
+### Phase 2.5: Auto-Generated Critical CSS
+
+Starting with Phase 2.5, the critical CSS workflow is fully automated:
+
+- **Developer adds**: `/* @critical */` marker to component Sass file
+- **Plugin does**: Scans for markers and auto-generates centralized imports
+- **Build does**: Compiles CSS and inlines automatically
+- **Result**: No manual import management, no developer forgetfulness
+
+This hybrid approach combines marker-based clarity with complete automation, ensuring all marked components are always included in the inline CSS.
 
 ## Code Quality
 

@@ -393,3 +393,133 @@ Options for future enhancement:
    - Marker validation in real-time
 
 Current state is **solid and maintainable**. Ready to move to Phase 3 when needed.
+
+---
+
+## Phase 2.5: Hybrid Auto-Generated Critical CSS (In Progress)
+
+**Status**: 🚀 Implementation Started
+**Date**: January 25, 2026
+**Approach**: Template-based auto-generation with marker detection
+**Goal**: Eliminate manual import management—developers mark SCSS, plugin auto-generates centralized imports at build time
+
+### What's Changing
+
+**Problem**: Developers must manually add imports to `_critical.scss` when marking components. This is error-prone and easy to forget.
+
+**Solution**:
+
+1. Create template files (`_critical.template.scss`, `_non-critical.template.scss`) that define abstracts and structure
+2. Enhance plugin to generate complete `_critical.scss` and `_non-critical.scss` from templates + detected markers
+3. Add `.gitignore` rules so generated files are not committed (only templates are tracked)
+4. Files are regenerated on every build (idempotent, no stale state)
+
+### Architecture
+
+```
+Before (Manual):
+Developer writes marker → Must manually add @use import → Risk of forgetting
+
+After (Hybrid Auto):
+Developer writes marker → Plugin auto-detects → Auto-generates complete file → CSS inlines
+```
+
+### Key Design Decisions
+
+**1. Templates + Generation (Not Pure Virtual Modules)**
+
+- Sass doesn't understand Vite's virtual module IDs
+- File generation to real `.scss` files is more reliable
+- Templates preserve abstracts (no duplication across regenerations)
+
+**2. Generated Files Not in Git**
+
+- `.gitignore` rules exclude `_critical.scss` and `_non-critical.scss`
+- Only `.template.scss` files are tracked
+- Eliminates merge conflicts from multiple developers building locally
+- Generated files are always reproducible from templates + markers
+
+**3. Regeneration on Every Build**
+
+- Plugin runs during `config()` hook (early, before Sass)
+- Files written before Sass compilation begins
+- Guarantees up-to-date imports matching current markers
+- Safe to delete locally; will be recreated on next build
+
+**4. Safeguards Against Manual Edits**
+
+- Generated files include `// AUTO-GENERATED - DO NOT EDIT` header
+- Pre-commit hook added to prevent commits of generated files
+- Verbose logging shows what was detected and generated
+- Developer documentation explains never to edit generated files
+
+### Implementation Steps
+
+1. ✅ **Create templates** (preserve abstracts and structure)
+2. ✅ **Enhance plugin** (read templates, generate complete files)
+3. ✅ **Update .gitignore** (exclude generated files)
+4. ✅ **Update documentation** (explain new workflow)
+5. 🔄 **Test thoroughly** (build, CSS inlining, multiple routes)
+
+### Developer Workflow (After Phase 2.5)
+
+```
+1. Create component with .scss file
+   └─ app/components/button/button.scss
+
+2. Add /* @critical */ marker at file start
+   └─ /* @critical */
+      .btn { ... }
+
+3. Run yarn build
+   └─ Plugin detects marker
+   └─ Auto-generates _critical.scss with component import
+   └─ CSS compiles and inlines automatically
+
+4. No manual import management needed ✅
+```
+
+### Benefits
+
+✅ **Zero developer friction** - Just add marker, everything else is automatic
+✅ **No forgetfulness** - Plugin ensures all marked components are included
+✅ **Clear cause-and-effect** - Marker → auto-generated imports → CSS inlined
+✅ **Backwards compatible** - Templates preserve all existing abstracts
+✅ **Debuggable** - Generated files visible locally, detailed console logging
+✅ **Git-clean** - No merge conflicts from generated files
+
+### Further Considerations Implementation
+
+1. **Template Synchronization** ✅
+   - Templates define permanent abstracts
+   - New abstracts added to both template files
+   - Plugin preserves template abstracts (no duplication)
+   - Keep design tokens centralized and evolved in one place
+
+2. **Developer Visibility** ✅
+   - Generated files include clear "AUTO-GENERATED - DO NOT EDIT" headers
+   - Pre-commit hook prevents accidental commits (git safeguard)
+   - Verbose build logging shows detected markers and generated content
+
+3. **Debugging Generated Imports** ✅
+   - `.vite-cache/` reference files show what plugin detected
+   - Local `app/styles/create/_critical.scss` shows what was auto-generated
+   - Build console output lists all detected components
+   - Easy to verify "marker was found and included"
+
+### Status Tracking
+
+| Task               | Status         | Details                                                            |
+| ------------------ | -------------- | ------------------------------------------------------------------ |
+| Create templates   | 🔄 In Progress | Create `_critical.template.scss` and `_non-critical.template.scss` |
+| Enhance plugin     | 🔄 In Progress | Modify scanner to use templates, generate complete files           |
+| Update .gitignore  | 🔄 In Progress | Add rules for generated files                                      |
+| Update docs        | 🔄 In Progress | DOCUMENTATION.md critical CSS section                              |
+| Test build         | ⏳ Pending     | Full build + CSS inlining verification                             |
+| Verify git hygiene | ⏳ Pending     | Confirm generated files properly ignored                           |
+
+### Timeline
+
+- Phase 2.5 estimated completion: **Today (January 25, 2026)**
+- All implementation steps ready for autonomous execution
+- Zero-risk rollback if needed (all changes are non-breaking)

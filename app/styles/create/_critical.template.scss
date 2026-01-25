@@ -1,0 +1,20 @@
+// CRITICAL CSS TEMPLATE
+// ⚠️  This file defines the structure and abstracts for critical CSS.
+// Component imports are auto-generated from /* @critical */ markers during build.
+//
+// DO NOT manually edit component imports—add the /* @critical */ marker
+// to your component file instead, and the plugin will auto-detect it.
+//
+// Template changes propagate to all regenerations.
+
+// Abstract tokens (always included for styling foundation)
+// These define CSS variables and utility classes available to all components
+@use "root";
+@use "typography";
+@use "flex";
+@use "colors";
+@use "spacings";
+
+// AUTO-GENERATED SECTION BELOW
+// Plugin will insert detected critical components here at build time
+// Do not manually edit this section
