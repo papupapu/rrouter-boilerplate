@@ -1,26 +1,40 @@
 # Phase 2: Vite Plugin Implementation Plan
 
-**Status**: Detailed Technical Plan
+**Status**: ✅ Plugin Implemented (Hybrid Approach)
 **Date**: January 25, 2026
 **Goal**: Automate generation of centralized imports from `/* @critical */` markers
+
+**Current State**: Plugin successfully scans for markers and auto-generates reference files. Manual imports are in place as a stable fallback. Ready to discuss integration approaches for Phase 2.5.
 
 ---
 
 ## Key Decisions
 
-### 1. Virtual Modules > File Generation ✅
+### 1. Virtual Modules vs File Generation: Pragmatic Hybrid ✅
 
-**Why Virtual Modules Are Superior for Performance:**
+**Original Plan**: Virtual modules (in-memory only)
+**Implementation Reality**: File generation to `.vite-cache/` directory
 
-| Aspect                  | File Generation        | Virtual Modules     |
-| ----------------------- | ---------------------- | ------------------- |
-| Disk I/O                | ✗ Multiple writes      | ✅ In-memory only   |
-| Dev Performance         | ✗ Slower (file system) | ✅ Instant (memory) |
-| HMR (Hot Module Reload) | ✗ File system events   | ✅ Instant updates  |
-| Build Cache             | ✗ Files may invalidate | ✅ Cleaner caching  |
-| Cleanup                 | ✗ Temp files to manage | ✅ Automatic        |
+| Approach        | Plan         | Reality        | Reason                                                        |
+| --------------- | ------------ | -------------- | ------------------------------------------------------------- |
+| Virtual Modules | ✅ Chosen    | ❌ Hit issues  | Sass preprocessing happens before most Vite hooks             |
+| File Generation | ✗ Considered | ✅ Implemented | Guarantees files exist before Sass needs them                 |
+| Timing Problem  | N/A          | ✅ Solved      | Plugin runs in config() hook which is early enough            |
+| Current State   | N/A          | 🔄 Hybrid      | Plugin generates cache files + manual imports in actual .scss |
 
-**Implementation**: Use Vite's `resolveId()` + `load()` hooks to serve generated imports from memory
+**What We Learned**: Sass preprocessing is deeply tied to Vite's build pipeline and doesn't understand Vite's virtual module IDs. File generation to a real directory (`.vite-cache/`) is more reliable than trying to intercept at the Sass level.
+
+**Hybrid Architecture** (Current Working State):
+
+```
+Plugin Flow:
+1. config() hook runs → scans app/ for markers
+2. Generates .vite-cache/critical.scss with detected imports
+3. Generates .vite-cache/non-critical.scss with abstracts
+4. Logs findings to console
+5. _critical.scss manually imports header (for now)
+6. Build succeeds, CSS inlines properly
+```
 
 ### 2. Abstraction Handling ✅
 
@@ -89,170 +103,85 @@
 ### Plugin File Structure
 
 ```
-build/
-└── plugins/
-    └── critical-css-scanner.ts
+vite-plugins/
+└── critical-css-scanner.ts        ✅ Created and working
 ```
 
-### Plugin Lifecycle
+**Previous Plan**: `build/plugins/critical-css-scanner.ts`
+**Actual**: `vite-plugins/critical-css-scanner.ts` (cleaner structure)
+
+### Plugin Lifecycle (Actual Implementation)
 
 ```
-1. config() hook (build phase only)
-   └─ Scan app/ for all .scss files
-   └─ Parse each file with regex
-   └─ Build Map<filePath, marker>
-   └─ Create relative import paths
-   └─ Log findings
+Build Phase:
+1. config() hook runs (build time only)
+   └─ Set appRoot and cacheDir paths
+   └─ Create .vite-cache directory
 
-2. resolveId() hook
-   └─ Intercept imports of:
-      - "@critical-css-scanner:critical"
-      - "@critical-css-scanner:non-critical"
-   └─ Return virtual module ID
+2. buildStart() hook runs (inside config return)
+   └─ Scan app/ recursively for .scss files
+   └─ Parse each file with regex:
+      - CRITICAL_FILE_MARKER: /^[\s/]*\/\*\s*@critical\s*\*\//m
+      - NON_CRITICAL_FILE_MARKER: /^[\s/]*\/\*\s*@non-critical\s*\*\//m
+   └─ Build critical[] and nonCritical[] arrays
+   └─ Generate .vite-cache/critical.scss
+   └─ Generate .vite-cache/non-critical.scss
+   └─ Log findings to console
 
-3. load() hook
-   └─ Generate and return:
-      - Virtual critical.scss content (abstracts + critical components)
-      - Virtual non-critical.scss content (abstracts + non-critical components)
+3. Sass compilation (unchanged)
+   └─ Compiles _critical.scss (manually imports header)
+   └─ Compiles _non-critical.scss
+   └─ Output CSS is inlined as before
 
-4. Integration in vite.config.ts
-   └─ Call criticalCssScanner() plugin
-   └─ Position before other plugins
+4. No virtual modules needed!
 ```
 
-### Virtual Module Strategy
+**Key Insight**: The `buildStart()` hook runs after `config()` but BEFORE Sass touches any files. Perfect timing.
 
-Instead of modifying actual files, we intercept imports:
+### Integration Strategy (Actual vs Planned)
 
-**In vite.config.ts:**
+**Planned**: Virtual modules approach
 
 ```typescript
 plugins: [
-  criticalCssScanner(), // ← Runs first
-  reactRouter(), // ← Existing
-  tsconfigPaths(), // ← Existing
+  criticalCssScanner(), // Serves @critical-css-scanner:critical virtually
+  reactRouter(),
+  tsconfigPaths(),
 ];
 ```
 
-**What changes in files:**
-
-```scss
-// app/styles/create/_critical.scss
-@import "@critical-css-scanner:critical";
-
-// app/styles/create/_non-critical.scss
-@import "@critical-css-scanner:non-critical";
-```
-
-Actually, better approach: Don't modify the actual files at all. Instead, use Vite's alias feature to redirect the imports:
-
-**In vite.config.ts:**
+**Actual**: File generation approach
 
 ```typescript
-resolve: {
-  alias: {
-    // Redirect the _critical.scss import to our virtual module
-    '@critical-css': '@critical-css-scanner:virtual',
-  }
-}
+plugins: [
+  criticalCssScanner(), // Generates .vite-cache/critical.scss
+  reactRouter(),
+  tsconfigPaths(),
+];
 ```
 
-Or even simpler: Keep the actual files minimal and have the plugin generate their content when they're loaded.
-
-**Simplest approach:**
-
-1. Keep `_critical.scss` and `_non-critical.scss` as they are
-2. Plugin writes generated imports to a hidden temp directory
-3. Files import from that directory
-
-Actually, virtual modules ARE the best. Let me refine:
-
-**Final approach (Virtual Modules):**
-
-- Plugin hooks into Sass import resolution
-- When Sass tries to import `_critical.scss`, our plugin intercepts
-- Plugin returns generated content in memory
-- No files written to disk
+**Difference**: Minimal! Plugin is integrated the same way. The implementation details (virtual vs files) are internal to the plugin.
 
 ---
 
 ## Regex Patterns for Marker Detection
 
 ```typescript
-// File-level marker (entire file is critical)
-const CRITICAL_FILE = /^[\s/]*\/\*\s*@critical\s*\*\//m;
-
-// File-level marker (entire file is non-critical)
-const NON_CRITICAL_FILE = /^[\s/]*\/\*\s*@non-critical\s*\*\//m;
-
-// Block markers (specific rules)
-const CRITICAL_START = /\/\*\s*@critical-start\s*\*\//;
-const CRITICAL_END = /\/\*\s*@critical-end\s*\*\//;
-const NON_CRITICAL_START = /\/\*\s*@non-critical-start\s*\*\//;
-const NON_CRITICAL_END = /\/\*\s*@non-critical-end\s*\*\//;
+const CRITICAL_FILE_MARKER = /^[\s/]*\/\*\s*@critical\s*\*\//m;
+const NON_CRITICAL_FILE_MARKER = /^[\s/]*\/\*\s*@non-critical\s*\*\//m;
 ```
 
----
-
-## Data Flow
-
-### Scanning Phase (Build Time)
-
-```
-1. Plugin config() runs
-2. Walk app/ directory recursively
-3. For each .scss file:
-   ├─ Read file content
-   ├─ Test against regex patterns
-   ├─ Classify as: critical | non-critical | unmarked
-   ├─ Compute relative import path
-   └─ Store in Map
-
-4. Build two lists:
-   ├─ criticalImports: ["@use '../../components/header/header';", ...]
-   └─ nonCriticalImports: ["@use '../../components/footer/footer';", ...]
-```
-
-### Generation Phase (Build Time)
-
-```
-1. When Sass tries to import _critical.scss:
-   ├─ resolveId() intercepts (virtual module)
-   ├─ load() generates content:
-      - @use "root";
-      - @use "typography";
-      - @use "flex";
-      - @use "colors";
-      - @use "spacings";
-      - @use "../../components/layout/header/header";  // from markers
-      - @use "../../components/post/search/search";     // from markers
-   └─ Returns to Sass
-
-2. When Sass tries to import _non-critical.scss:
-   ├─ resolveId() intercepts (virtual module)
-   ├─ load() generates content:
-      - @use "borders";
-      - @use "statuses";
-      - @use "sizes";
-      // Non-critical components (if any exist)
-   └─ Returns to Sass
-
-3. Sass compiles the generated content as normal
-4. Final CSS includes:
-   ├─ Abstracts (inlined)
-   └─ Critical components (inlined)
-```
+Simple, clean, works perfectly. (Block-level markers could be added in Phase 3 if needed.)
 
 ---
 
 ## Generated Output Examples
 
-### \_critical.scss (Virtual)
+### Current: `.vite-cache/critical.scss`
 
 ```scss
 // AUTO-GENERATED by critical-css-scanner plugin
-// ⚠️ DO NOT EDIT - Changes will be overwritten
-
+// Abstract tokens
 @use "root";
 @use "typography";
 @use "flex";
@@ -260,88 +189,176 @@ const NON_CRITICAL_END = /\/\*\s*@non-critical-end\s*\*\//;
 @use "spacings";
 
 // Critical components (detected from /* @critical */ markers)
-@use "../../components/layout/header/header";
+@use "./../../components/layout/header/header";
 ```
 
-### \_non-critical.scss (Virtual)
+**Status**: ✅ Generated correctly on each build
+
+### Current: `.vite-cache/non-critical.scss`
 
 ```scss
 // AUTO-GENERATED by critical-css-scanner plugin
-// ⚠️ DO NOT EDIT - Changes will be overwritten
-
 @use "borders";
 @use "statuses";
 @use "sizes";
-
-// Non-critical components (detected from /* @non-critical */ markers)
-// (Currently: none)
 ```
 
----
-
-## Plugin Implementation Checklist
-
-### Phase 2.1: Plugin Creation
-
-- [ ] Create `build/plugins/critical-css-scanner.ts`
-- [ ] Implement file system scanning (recursive `app/` directory)
-- [ ] Implement regex-based marker detection
-- [ ] Build critical/non-critical file maps
-- [ ] Generate import paths (relative to `app/styles/create/`)
-
-### Phase 2.2: Vite Integration
-
-- [ ] Implement `config()` hook (production builds only)
-- [ ] Implement `resolveId()` hook (virtual module interception)
-- [ ] Implement `load()` hook (generate scss content)
-- [ ] Integrate into `vite.config.ts`
-- [ ] Add plugin to exports
-
-### Phase 2.3: Error Handling & Logging
-
-- [ ] Validate import paths can be resolved
-- [ ] Log warnings for issues
-- [ ] Log summary: files scanned, critical/non-critical breakdown
-- [ ] Handle missing files gracefully
-
-### Phase 2.4: Testing & Verification
-
-- [ ] Run `yarn build` - CSS should compile
-- [ ] Verify CSS is inlined in production
-- [ ] Run `yarn dev` - should stay fast (plugin disabled)
-- [ ] Check CSS bundle size unchanged
-- [ ] Test on multiple routes
-
-### Phase 2.5: Documentation
-
-- [ ] Update DOCUMENTATION.md with plugin details
-- [ ] Update CRITICAL_CSS_DECENTRALIZATION_PLAN.md with Phase 2 completion
-- [ ] Add comments to plugin code
-- [ ] Document troubleshooting
+**Status**: ✅ Generated correctly, ready for future component additions
 
 ---
 
-## Why This Approach Works
+## Phase 2.5 Integration Options
 
-1. **Performance**: Virtual modules = no disk I/O = fast
-2. **Dev Experience**: Dev mode uses existing system = no overhead
-3. **Production Optimized**: Plugin only runs when building = no wasted cycles
-4. **Maintainability**: Single source of truth (markers in component files)
-5. **Abstraction Coverage**: All tokens available everywhere, inlined for performance
-6. **Scalability**: Adding new components is automatic (just add marker)
-7. **Reversibility**: Can disable plugin and revert to manual imports
+Now that the plugin is working, we have **three viable approaches** to wire up the auto-generated cache files:
+
+### Option A: Reference Files (Keep Current State)
+
+**How it works:**
+
+- Plugin generates cache files in `.vite-cache/`
+- Developers reference cache files in `_critical.scss`
+- Example: `@use "./../../../.vite-cache/critical";`
+
+**Pros:**
+
+- ✅ Zero risk (already working)
+- ✅ Plugin fully functional
+- ✅ Can enable cache-based hints/linting
+- ✅ Reference files prove plugin correctness
+
+**Cons:**
+
+- ✗ Manual imports still needed (minor overhead)
+- ✗ Adds .vite-cache to source control
+- ✗ Path references are fragile
+
+**Recommended**: For now while planning Phase 2.5
 
 ---
 
-## Next Steps
+### Option B: Sass Include Path
 
-1. ✅ Review this plan (current)
-2. Create `build/plugins/critical-css-scanner.ts` with full implementation
-3. Integrate into `vite.config.ts`
-4. Test with `yarn build`
-5. Verify CSS inlining works
-6. Update documentation
+**How it works:**
+
+- Plugin generates to `.vite-cache/`
+- Vite's Sass preprocessor options add `.vite-cache/` to include path
+- `_critical.scss` imports: `@use "critical";` (finds `.vite-cache/critical.scss`)
+
+**Implementation:**
+
+```typescript
+export default defineConfig({
+  css: {
+    preprocessorOptions: {
+      scss: {
+        includePaths: ["./.vite-cache"],
+      },
+    },
+  },
+  plugins: [criticalCssScanner(), ...],
+});
+```
+
+**Pros:**
+
+- ✅ Simpler import syntax in actual files
+- ✅ Plugin output automatically discoverable
+- ✅ No path navigation needed
+
+**Cons:**
+
+- ⚠️ Relies on preprocessor option (less standard)
+- ⚠️ Adds .vite-cache to source control still
+- ⚠️ Less explicit than Option A
+
+**Recommended**: If we want implicit discovery
 
 ---
 
-**Ready to implement?** Proceed to step 2 above.
+### Option C: Plugin-Managed Virtual Modules (Phase 2.5+)
+
+**How it works:**
+
+- Plugin implements Vite's `resolveId()` hook
+- Intercepts imports like `@use "@vite-cache:critical"`
+- Returns generated content in-memory
+- No .vite-cache directory needed
+
+**Implementation outline:**
+
+```typescript
+resolveId(id) {
+  if (id === "@vite-cache:critical") {
+    return id; // Vite tracks as virtual
+  }
+},
+load(id) {
+  if (id === "@vite-cache:critical") {
+    return generateCriticalScss();
+  }
+}
+```
+
+**Then in \_critical.scss:**
+
+```scss
+@use "@vite-cache:critical";
+```
+
+**Pros:**
+
+- ✅ No .vite-cache directory
+- ✅ Cleaner project structure
+- ✅ Purely in-memory (fast)
+- ✅ No path fragility
+
+**Cons:**
+
+- ✗ Requires solving Sass/Vite timing again
+- ✗ Most complex option
+- ✗ Higher risk of breaking builds
+- ✗ Requires more debugging
+
+**Recommended**: For Phase 3 after more testing
+
+---
+
+## Recommended Path Forward
+
+1. **Now**: Stay with current state
+   - Plugin works ✅
+   - Manual imports work ✅
+   - Build succeeds ✅
+   - Cache files are generated (proof of concept) ✅
+
+2. **Phase 2.5a** (Low Risk): Option B - Sass Include Path
+   - Add 3 lines to vite.config.ts
+   - Change import paths in \_critical.scss and \_non-critical.scss
+   - Test that it builds
+
+3. **Phase 2.5b** (Experimental): Option C - Virtual Modules
+   - Attempt Sass/Vite integration at plugin level
+   - Only if Phase 2.5a succeeds
+   - Higher risk/reward
+
+4. **Phase 3**: Separate CSS outputs
+   - Split critical.css and non-critical.css files
+   - More optimization potential
+   - Requires Phase 2.5 complete first
+
+---
+
+## Summary: Current State
+
+| Aspect         | Status            | Details                                    |
+| -------------- | ----------------- | ------------------------------------------ |
+| Plugin Code    | ✅ Complete       | Working, linted, committed                 |
+| Auto-Detection | ✅ Complete       | Correctly finds `@critical` markers        |
+| Cache Files    | ✅ Generated      | Files in .vite-cache/ with correct content |
+| Manual Imports | ✅ In Place       | Header.scss manually in \_critical.scss    |
+| Build System   | ✅ Unchanged      | CSS still inlined, no regressions          |
+| Next Decision  | 🔄 Awaiting Input | Which Phase 2.5 approach to pursue?        |
+
+---
+
+**Next**: Discuss which approach best fits the project's goals.

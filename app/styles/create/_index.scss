@@ -3,8 +3,8 @@
  * 
  * This file orchestrates the generation of utility classes from the token system.
  * Critical and non-critical styles are separated for performance optimization:
- * - Critical styles are inlined in <head> by Beasties
- * - Non-critical styles are lazy-loaded asynchronously
+ * - Critical abstracts + components are inlined in <head> by Beasties
+ * - Non-critical utilities + components are lazy-loaded asynchronously
  */
 
 @use "critical";
