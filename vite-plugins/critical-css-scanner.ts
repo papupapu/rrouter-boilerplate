@@ -37,6 +37,7 @@ export function criticalCssScanner(): Plugin {
   let config: ResolvedConfig | null = null;
   let fileWatcher: ReturnType<typeof watch> | null = null;
   let regenerateTimer: ReturnType<typeof setTimeout> | null = null;
+  let server: any = null;
 
   // Helper to regenerate files
   async function regenerateImports() {
@@ -93,6 +94,16 @@ export function criticalCssScanner(): Plugin {
       });
       console.log("");
     }
+
+    // Trigger HMR update to reload SCSS modules
+    if (server && server.ws) {
+      server.ws.send({
+        type: "full",
+        event: "full-reload",
+        payload: { path: "*" },
+      });
+      console.log("[Critical CSS Scanner] 🔄 Triggered HMR reload");
+    }
   }
 
   return {
@@ -118,7 +129,7 @@ export function criticalCssScanner(): Plugin {
       await regenerateImports();
     },
 
-    // Set up file watcher in dev mode
+    // Set up file watcher in dev mode and capture server
     configResolved(resolvedConfig) {
       config = resolvedConfig;
 
@@ -162,6 +173,15 @@ export function criticalCssScanner(): Plugin {
           "[Critical CSS Scanner] 👀 Watching app directory for SCSS changes"
         );
       }
+    },
+
+    // Capture server instance for HMR updates
+    async handleHotUpdate(ctx) {
+      if (!server && ctx.server) {
+        server = ctx.server;
+        console.log("[Critical CSS Scanner] 📡 Connected to HMR server");
+      }
+      return;
     },
 
     // Hook into the write bundle to split CSS files
