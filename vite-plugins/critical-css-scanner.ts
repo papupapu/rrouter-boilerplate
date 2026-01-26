@@ -230,7 +230,8 @@ export function criticalCssScanner(): Plugin {
           type: "asset",
           fileName: nonCriticalFileName,
           source: nonCritical,
-        };
+          needsCodeReference: false,
+        } as any;
 
         const criticalSize = (critical.length / 1024).toFixed(2);
         const nonCriticalSize = (nonCritical.length / 1024).toFixed(2);

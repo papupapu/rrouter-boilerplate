@@ -6,12 +6,7 @@ import { beasties } from "vite-plugin-beasties";
 import { criticalCssScanner } from "./vite-plugins/critical-css-scanner";
 import { cssCompiledSeparatelyPlugin } from "./vite-plugins/css-compiled-separately";
 
-const beastiesConfig = beasties({
-  preload: "swap",
-  compress: true,
-  external: true,
-  fonts: true,
-});
+const beastiesConfig = beasties();
 
 export default defineConfig(({ command }) => ({
   plugins: [
