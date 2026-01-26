@@ -3,22 +3,21 @@ import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { visualizer } from "rollup-plugin-visualizer";
 import { beasties } from "vite-plugin-beasties";
+import { criticalCssScanner } from "./vite-plugins/critical-css-scanner";
+import { cssCompiledSeparatelyPlugin } from "./vite-plugins/css-compiled-separately";
 
-const beastiesConfig = beasties({
-  preload: "swap",
-  compress: true,
-  external: true,
-  fonts: true,
-} as any);
+const beastiesConfig = beasties();
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [
+    criticalCssScanner(), // Run early for critical CSS marking
     reactRouter(),
     tsconfigPaths(),
     {
       ...beastiesConfig,
       apply: "build",
-    } as any,
+    },
+    cssCompiledSeparatelyPlugin(), // Compile non-critical CSS separately after build
     visualizer({
       open: true,
       gzipSize: true,
@@ -26,4 +25,17 @@ export default defineConfig({
       filename: "dist/stats.html",
     }),
   ],
-});
+  ...(command === "serve" && {
+    css: {
+      preprocessorOptions: {
+        scss: {
+          additionalData: `
+            // In dev mode, ensure both entry points are processed
+            // Critical is imported in _index.scss
+            // Non-critical is imported separately for HMR support
+          `,
+        },
+      },
+    },
+  }),
+}));

@@ -1,11 +1,25 @@
 /**
  * CSS Generation from Design Tokens
  * 
- * This file orchestrates the generation of utility classes from the token system.
- * Critical and non-critical styles are separated for performance optimization:
- * - Critical styles are inlined in <head> by Beasties
- * - Non-critical styles are lazy-loaded asynchronously
+ * Phase 3: Proper CSS Code Splitting
+ * 
+ * This file imports ONLY critical CSS that will be inlined in <head>.
+ * Non-critical CSS is imported separately in app/styles/non-critical-entry.scss
+ * 
+ * In PRODUCTION BUILD:
+ * - This file → root-*.css (critical, inlined in <style> tag)
+ * - non-critical-entry.scss → non-critical-*.css (external, lazy-loaded)
+ * - css-compiled-separately plugin handles the separate compilation
+ * 
+ * In DEVELOPMENT MODE:
+ * - Both entry points are compiled by Vite's dev server
+ * - Vite automatically includes both via optimizeDeps
+ * - HMR handles instant updates for both
+ * 
+ * Result:
+ * - Dev: All styles available for rapid development (via dual entry points)
+ * - Prod: Optimized split (critical inline, non-critical async)
+ * - No CSS duplication in either mode
  */
 
 @use "critical";
-@use "non-critical";

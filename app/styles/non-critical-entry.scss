@@ -1,0 +1,16 @@
+/**
+ * Non-Critical CSS Entry Point (Phase 3)
+ * 
+ * This is a separate SCSS entry point that compiles ONLY non-critical CSS.
+ * During build, Vite will create a separate non-critical-*.css bundle from this file.
+ * 
+ * In the Vite build:
+ * - app/styles/index.scss → root-*.css (critical CSS, inlined in <head>)
+ * - app/styles/non-critical-entry.scss → non-critical-*.css (async-loaded)
+ * 
+ * The beasties-processor will:
+ * 1. Inline root-*.css as <style id="critical-css"> tag
+ * 2. Add non-critical-*.css as <link rel="stylesheet"> tag with lazy-loading
+ */
+
+@use "create/non-critical";

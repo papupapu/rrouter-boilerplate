@@ -6,3 +6,9 @@
 /.react-router/
 /build/
 dist/stats.html
+# Auto-generated critical CSS files (regenerated on each build from markers)
+app/styles/create/_critical.scss
+app/styles/create/_non-critical.scss
+
+# Build cache for critical CSS scanner
+.vite-cache/
