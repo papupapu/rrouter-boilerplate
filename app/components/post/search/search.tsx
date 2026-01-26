@@ -6,7 +6,7 @@ export function Search() {
   console.log("Fetcher data:", fetcher.data);
 
   return (
-    <div className="search p--200">
+    <div className="p--200">
       <fetcher.Form method="get" action="/search">
         <input
           type="text"
