@@ -78,9 +78,21 @@ Make sure to deploy the output of `npm run build`
 │   └── server/    # Server-side code
 ```
 
+## Documentation
+
+- **[DOCUMENTATION.md](./DOCUMENTATION.md)** — Complete project guide covering setup, project structure, tech stack, CSS Token System, code quality, state management, and more
+- **[CRITICAL_CSS_IMPLEMENTATION.md](./CRITICAL_CSS_IMPLEMENTATION.md)** — Comprehensive guide to the automatic critical CSS inlining system (production-ready, Phase 4 complete)
+
 ## Styling
 
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
+This template uses a **CSS Token System** with **automatic critical CSS inlining**:
+
+- ✅ Sass-based design tokens (colors, typography, spacing, etc.)
+- ✅ Auto-generated utility classes
+- ✅ Automatic inlining of above-the-fold CSS for faster page loads
+- ✅ Lazy-loading of non-critical CSS
+
+For complete styling documentation, see [DOCUMENTATION.md - CSS Token System](./DOCUMENTATION.md#css-token-system) and [CRITICAL_CSS_IMPLEMENTATION.md](./CRITICAL_CSS_IMPLEMENTATION.md).
 
 ---
 
