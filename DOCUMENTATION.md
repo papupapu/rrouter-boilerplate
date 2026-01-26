@@ -104,12 +104,13 @@ The `prepare` script will automatically run `husky install` to set up Git hooks.
 
 ### Server Runtime
 
-| Technology          | Version               | Purpose                                |
-| ------------------- | --------------------- | -------------------------------------- |
-| Node                | 22 (Alpine in Docker) | Runtime environment                    |
-| @react-router/node  | 7.12.0                | Node.js adapter for React Router       |
-| @react-router/serve | 7.12.0                | Production server for React Router SSR |
-| isbot               | 5.1.31                | Bot detection middleware for SSR       |
+| Technology          | Version               | Purpose                                           |
+| ------------------- | --------------------- | ------------------------------------------------- |
+| Node                | 22 (Alpine in Docker) | Runtime environment                               |
+| @react-router/node  | 7.12.0                | Node.js adapter for React Router                  |
+| @react-router/serve | 7.12.0                | Production server for React Router SSR            |
+| isbot               | 5.1.31                | Bot detection middleware for SSR                  |
+| beasties-processor  | custom                | CSS inlining for critical path optimization (SSR) |
 
 ## Project Structure
 
