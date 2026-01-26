@@ -1,5 +1,5 @@
 /**
- * Non-Critical CSS Entry Point (Phase 3)
+ * Non-Critical CSS Entry Point (Phase 4)
  * 
  * This is a separate SCSS entry point that compiles ONLY non-critical CSS.
  * During build, Vite will create a separate non-critical-*.css bundle from this file.
@@ -11,6 +11,10 @@
  * The beasties-processor will:
  * 1. Inline root-*.css as <style id="critical-css"> tag
  * 2. Add non-critical-*.css as <link rel="stylesheet"> tag with lazy-loading
+ * 
+ * NOTE: Abstracts and utility generators are in critical CSS only, so all CSS variables
+ * and utility classes are available globally once critical CSS loads.
  */
 
-@use "create/non-critical";
+// Auto-generated non-critical components (footer, search, etc.)
+@use "../.internal/critical-css/generated-non-critical" as noncritical;

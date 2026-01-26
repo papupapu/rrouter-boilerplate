@@ -5,24 +5,26 @@ import { fileURLToPath } from "url";
 import { watch } from "fs";
 
 /**
- * Critical CSS Scanner Plugin - Phase 2.5 Auto-Generated Hybrid Approach
+ * Critical CSS Scanner Plugin - Phase 4 Auto-Detection Approach
  *
- * Scans all .scss files in the app directory for marker comments
- * and automatically generates centralized imports from templates.
+ * Automatically detects and imports:
+ * 1. ALL design tokens from app/styles/abstracts/
+ * 2. Components marked with @critical marker in app/components/
  *
  * Generated files (written to actual .scss files, not virtual):
- * - app/styles/create/_critical.scss (inlined styles)
- * - app/styles/create/_non-critical.scss (async loaded styles)
+ * - app/.internal/critical-css/_generated-critical.scss
+ * - app/.internal/critical-css/_generated-non-critical.scss
  *
+ * No templates needed - pure auto-generation from filesystem scanning.
  * Files are auto-generated at build time and never committed to git.
- * Only template files (_*.template.scss) are tracked in version control.
  *
  * Runs during both dev and build modes:
  * - Production builds: Scans and generates once
  * - Development mode: Scans on startup + watches for file changes (HMR support)
  */
 
-interface ScannedFiles {
+interface GeneratedFiles {
+  abstracts: string[];
   critical: string[];
   nonCritical: string[];
 }
@@ -31,65 +33,170 @@ interface ScannedFiles {
 const CRITICAL_FILE_MARKER = /^[\s/]*\/\*\s*@critical\s*\*\//m;
 
 export function criticalCssScanner(): Plugin {
-  let scannedFiles: ScannedFiles = { critical: [], nonCritical: [] };
+  let generatedFiles: GeneratedFiles = {
+    abstracts: [],
+    critical: [],
+    nonCritical: [],
+  };
   let appRoot = "";
-  let stylesDir = "";
+  let internalCriticalDir = "";
   let config: ResolvedConfig | null = null;
   let fileWatcher: ReturnType<typeof watch> | null = null;
   let regenerateTimer: ReturnType<typeof setTimeout> | null = null;
   let server: any = null;
 
+  // Helper to scan abstracts from app/styles/abstracts/
+  async function scanAbstracts(abstractsDir: string): Promise<string[]> {
+    try {
+      const entries = await fs.readdir(abstractsDir, { withFileTypes: true });
+      const abstracts: string[] = [];
+
+      for (const entry of entries) {
+        // Include all .scss files except index.scss (which re-exports them)
+        if (
+          entry.isFile() &&
+          entry.name.endsWith(".scss") &&
+          entry.name !== "index.scss"
+        ) {
+          // Remove .scss extension for import paths
+          const abstractName = entry.name.replace(/\.scss$/, "");
+          abstracts.push(abstractName);
+        }
+      }
+
+      return abstracts.sort(); // Sort for consistent output
+    } catch {
+      console.warn(
+        `[Critical CSS Scanner] ⚠️  Failed to scan abstracts directory: ${abstractsDir}`
+      );
+      return [];
+    }
+  }
+
+  // Helper to generate abstract imports
+  function generateAbstractImports(abstracts: string[]): string {
+    const lines = [
+      "// ===================================",
+      "// ABSTRACTS (Auto-detected)",
+      "// ===================================",
+    ];
+
+    for (const abstract of abstracts) {
+      lines.push(`@use "../../styles/abstracts/${abstract}";`);
+    }
+
+    return lines.join("\n");
+  }
+
+  // Helper to generate component imports
+  function generateComponentImports(files: GeneratedFiles): string {
+    const lines: string[] = [];
+
+    if (files.critical.length > 0) {
+      lines.push(
+        "",
+        "// ===================================",
+        "// CRITICAL COMPONENTS (/* @critical */)",
+        "// ==================================="
+      );
+
+      for (const component of files.critical) {
+        const componentPath = component.replace(/\.scss$/, "");
+        lines.push(`@use "../../${componentPath}";`);
+      }
+    }
+
+    return lines.join("\n");
+  }
+
+  // Helper to generate non-critical component imports
+  function generateNonCriticalComponentImports(files: GeneratedFiles): string {
+    const lines: string[] = [];
+
+    if (files.nonCritical.length > 0) {
+      lines.push(
+        "// ===================================",
+        "// NON-CRITICAL COMPONENTS",
+        "// ==================================="
+      );
+
+      for (const component of files.nonCritical) {
+        const componentPath = component.replace(/\.scss$/, "");
+        lines.push(`@use "../../${componentPath}";`);
+      }
+    } else {
+      lines.push("// No non-critical components detected");
+    }
+
+    return lines.join("\n");
+  }
+
   // Helper to regenerate files
   async function regenerateImports() {
-    // Scan for SCSS files with markers
-    scannedFiles = await scanDirectory(appRoot);
+    // Scan abstracts
+    const abstractsDir = path.join(appRoot, "styles", "abstracts");
+    generatedFiles.abstracts = await scanAbstracts(abstractsDir);
 
-    // Read templates
-    const criticalTemplate = await readTemplate("_critical", stylesDir);
-    const nonCriticalTemplate = await readTemplate("_non-critical", stylesDir);
+    // Scan components for markers
+    const componentsData = await scanDirectory(appRoot);
+    generatedFiles.critical = componentsData.critical;
+    generatedFiles.nonCritical = componentsData.nonCritical;
 
-    // Generate files from templates + detected markers
-    const criticalContent = generateFromTemplate(
-      criticalTemplate,
-      scannedFiles.critical,
-      appRoot,
-      stylesDir
-    );
-    const nonCriticalContent = generateFromTemplate(
-      nonCriticalTemplate,
-      scannedFiles.nonCritical,
-      appRoot,
-      stylesDir
-    );
+    // Generate critical CSS file (abstracts + critical components)
+    const criticalContent =
+      "// AUTO-GENERATED - Do not edit manually\n" +
+      `// Generated at: ${new Date().toISOString()}\n` +
+      "// This file is regenerated on every yarn dev / yarn build\n\n" +
+      generateAbstractImports(generatedFiles.abstracts) +
+      generateComponentImports(generatedFiles) +
+      "\n";
+
+    // Generate non-critical CSS file (non-critical components only)
+    const nonCriticalContent =
+      "// AUTO-GENERATED - Do not edit manually\n" +
+      `// Generated at: ${new Date().toISOString()}\n` +
+      "// This file is regenerated on every yarn dev / yarn build\n\n" +
+      generateNonCriticalComponentImports(generatedFiles) +
+      "\n";
+
+    // Ensure .internal/critical-css directory exists
+    await fs.mkdir(internalCriticalDir, { recursive: true });
 
     // Write generated files
-    await fs.writeFile(path.join(stylesDir, "_critical.scss"), criticalContent);
     await fs.writeFile(
-      path.join(stylesDir, "_non-critical.scss"),
+      path.join(internalCriticalDir, "_generated-critical.scss"),
+      criticalContent
+    );
+    await fs.writeFile(
+      path.join(internalCriticalDir, "_generated-non-critical.scss"),
       nonCriticalContent
     );
 
     // Log results
-    const totalFiles =
-      scannedFiles.critical.length + scannedFiles.nonCritical.length;
+    console.log(`[Critical CSS Scanner] ✅ Auto-generated critical CSS`);
     console.log(
-      `[Critical CSS Scanner] ✅ Auto-generated critical CSS imports`
-    );
-    console.log(
-      `[Critical CSS Scanner]    Found ${scannedFiles.critical.length} critical, ${scannedFiles.nonCritical.length} non-critical, ${totalFiles} total components\n`
+      `[Critical CSS Scanner]    Abstracts: ${generatedFiles.abstracts.length} | Critical: ${generatedFiles.critical.length} | Non-critical: ${generatedFiles.nonCritical.length}\n`
     );
 
-    if (scannedFiles.critical.length > 0) {
+    if (generatedFiles.abstracts.length > 0) {
+      console.log("[Critical CSS Scanner] 🎨 Design tokens:");
+      generatedFiles.abstracts.forEach((token) => {
+        console.log(`  ✓ ${token}`);
+      });
+      console.log("");
+    }
+
+    if (generatedFiles.critical.length > 0) {
       console.log("[Critical CSS Scanner] 📌 Critical components:");
-      scannedFiles.critical.forEach((file) => {
+      generatedFiles.critical.forEach((file) => {
         console.log(`  ✓ ${file}`);
       });
       console.log("");
     }
 
-    if (scannedFiles.nonCritical.length > 0) {
+    if (generatedFiles.nonCritical.length > 0) {
       console.log("[Critical CSS Scanner] 📦 Non-critical components:");
-      scannedFiles.nonCritical.forEach((file) => {
+      generatedFiles.nonCritical.forEach((file) => {
         console.log(`  ✓ ${file}`);
       });
       console.log("");
@@ -108,20 +215,15 @@ export function criticalCssScanner(): Plugin {
 
   return {
     name: "critical-css-scanner",
-    // Run during both dev and build to ensure consistency
-    // Scans for markers and generates imports in both modes
 
     async config() {
       // Determine paths
       const __dirname = path.dirname(fileURLToPath(import.meta.url));
       appRoot = path.resolve(__dirname, "..", "app");
-      stylesDir = path.resolve(appRoot, "styles", "create");
-
-      // Ensure styles/create directory exists
-      await fs.mkdir(stylesDir, { recursive: true });
+      internalCriticalDir = path.resolve(appRoot, ".internal", "critical-css");
 
       console.log(
-        "[Critical CSS Scanner] 🔍 Scanning for markers in:",
+        "[Critical CSS Scanner] 🔍 Scanning for abstracts and markers in:",
         appRoot
       );
 
@@ -147,7 +249,7 @@ export function criticalCssScanner(): Plugin {
           if (regenerateTimer) clearTimeout(regenerateTimer);
           regenerateTimer = setTimeout(async () => {
             console.log(
-              "[Critical CSS Scanner] 📝 Detected SCSS file change, regenerating imports..."
+              "[Critical CSS Scanner] 📝 Detected file change, regenerating..."
             );
             await regenerateImports();
           }, 300); // 300ms debounce to ensure file is fully written
@@ -162,7 +264,7 @@ export function criticalCssScanner(): Plugin {
               filename.endsWith(".scss") &&
               !filename.includes("node_modules") &&
               !filename.includes(".git") &&
-              !filename.includes("styles/create") // Exclude generated files to prevent infinite loop
+              !filename.includes(".internal") // Exclude generated files to prevent infinite loop
             ) {
               scheduleRegenerate();
             }
@@ -215,7 +317,7 @@ export function criticalCssScanner(): Plugin {
         const fullCss = mainCssFile.source;
         const { critical, nonCritical } = splitCSSByComponents(
           fullCss,
-          scannedFiles
+          generatedFiles
         );
 
         // Update the main CSS file to contain only critical CSS
@@ -264,7 +366,7 @@ export function criticalCssScanner(): Plugin {
  */
 function splitCSSByComponents(
   fullCss: string,
-  scannedFiles: ScannedFiles
+  generatedFiles: GeneratedFiles
 ): { critical: string; nonCritical: string } {
   // For now, we'll use a simple approach:
   // Since we have two separate Sass entry points (_index.scss for critical,
@@ -279,7 +381,7 @@ function splitCSSByComponents(
   // and just create an empty non-critical CSS file as a placeholder.
   // The real split will happen when we can separate the Sass compilation.
 
-  const nonCriticalComponents = scannedFiles.nonCritical;
+  const nonCriticalComponents = generatedFiles.nonCritical;
 
   // Simple heuristic: extract rules that mention non-critical components
   let nonCritical = "";
@@ -308,29 +410,12 @@ function splitCSSByComponents(
 }
 
 /**
- * Read template file if it exists, return empty string if not
- */
-async function readTemplate(
-  filename: string,
-  templateDir: string
-): Promise<string> {
-  const templatePath = path.join(templateDir, `${filename}.template.scss`);
-  try {
-    return await fs.readFile(templatePath, "utf-8");
-  } catch {
-    // Template doesn't exist yet (shouldn't happen in normal operation)
-    console.warn(
-      `[Critical CSS Scanner] ⚠️  Template not found: ${templatePath}`
-    );
-    return "";
-  }
-}
-
-/**
  * Recursively scan directory for .scss files and detect markers
  */
-async function scanDirectory(dir: string): Promise<ScannedFiles> {
-  const result: ScannedFiles = { critical: [], nonCritical: [] };
+async function scanDirectory(
+  dir: string
+): Promise<{ critical: string[]; nonCritical: string[] }> {
+  const result = { critical: [], nonCritical: [] };
   const appRootPath = dir; // Capture appRoot in closure
 
   async function walk(dirPath: string) {
@@ -340,8 +425,8 @@ async function scanDirectory(dir: string): Promise<ScannedFiles> {
       for (const entry of entries) {
         const fullPath = path.join(dirPath, entry.name);
 
-        // Skip styles directory (contains abstracts and templates, not components)
-        if (entry.name === "styles") {
+        // Skip styles and .internal directories (contain abstracts, not components)
+        if (entry.name === "styles" || entry.name === ".internal") {
           continue;
         }
 
@@ -384,58 +469,4 @@ async function scanDirectory(dir: string): Promise<ScannedFiles> {
 
   await walk(dir);
   return result;
-}
-
-/**
- * Generate content from template
- * Preserves everything before "AUTO-GENERATED" marker, appends detected imports
- */
-function generateFromTemplate(
-  template: string,
-  detectedFiles: string[],
-  appRoot: string,
-  baseDir: string
-): string {
-  // Find the AUTO-GENERATED marker
-  const autoGenMarkerIndex = template.indexOf(
-    "// AUTO-GENERATED SECTION BELOW"
-  );
-
-  // Extract template header (everything up to the marker)
-  const templateHeader =
-    autoGenMarkerIndex > -1
-      ? template.substring(0, autoGenMarkerIndex)
-      : template;
-
-  // Build the generated section with imports
-  const generatedLines: string[] = [];
-
-  if (detectedFiles.length > 0) {
-    for (const file of detectedFiles) {
-      // file is like "components/layout/header/header.scss"
-      // baseDir is like "...app/styles/create"
-      // appRoot is like "...app"
-
-      // Remove .scss extension to get the module path
-      const fileWithoutExtension = file.replace(/\.scss$/, "");
-
-      // Compute relative path from baseDir to the component file
-      // file is relative to app/, so we need: app/components/layout/header/header
-      const componentFullPath = path.join(appRoot, fileWithoutExtension);
-      const relativePath = path.relative(baseDir, componentFullPath);
-
-      // Normalize path separators for Sass (@use always uses /)
-      const importPath = relativePath.replace(/\\/g, "/");
-
-      generatedLines.push(`@use "${importPath}";`);
-    }
-  }
-
-  // Combine template header + generated section
-  if (generatedLines.length > 0) {
-    return templateHeader + generatedLines.join("\n") + "\n";
-  } else {
-    // If no components detected, return just the template header
-    return templateHeader;
-  }
 }
