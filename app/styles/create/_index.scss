@@ -1,25 +1,31 @@
 /**
- * CSS Generation from Design Tokens
+ * CSS Utility Class Generators
  * 
- * Phase 3: Proper CSS Code Splitting
+ * Phase 4: Auto-Import Abstracts & Reorganize Critical CSS
  * 
- * This file imports ONLY critical CSS that will be inlined in <head>.
- * Non-critical CSS is imported separately in app/styles/non-critical-entry.scss
+ * This file generates utility classes from design tokens.
+ * Design token imports are now handled automatically by:
+ * - app/styles/index.scss → imports from .internal/critical-css/generated-critical
+ * - app/styles/non-critical-entry.scss → imports from .internal/critical-css/generated-non-critical
  * 
- * In PRODUCTION BUILD:
- * - This file → root-*.css (critical, inlined in <style> tag)
- * - non-critical-entry.scss → non-critical-*.css (external, lazy-loaded)
- * - css-compiled-separately plugin handles the separate compilation
- * 
- * In DEVELOPMENT MODE:
- * - Both entry points are compiled by Vite's dev server
- * - Vite automatically includes both via optimizeDeps
- * - HMR handles instant updates for both
- * 
- * Result:
- * - Dev: All styles available for rapid development (via dual entry points)
- * - Prod: Optimized split (critical inline, non-critical async)
- * - No CSS duplication in either mode
+ * This file ONLY generates utility classes that are used by both critical and non-critical CSS:
+ * - .c-txt-* (color text utilities)
+ * - .c-bg-* (color background utilities)
+ * - .tp-w-* (typography weight utilities)
+ * - .tp-s-* (typography size utilities)
+ * - Flex utilities
+ * - Spacing utilities
+ * - etc.
  */
 
-@use "critical";
+// Define CSS custom properties from design tokens
+@use "root";
+
+// Generate utility classes from design tokens
+@use "borders";
+@use "colors";
+@use "flex";
+@use "sizes";
+@use "spacings";
+@use "statuses";
+@use "typography";
