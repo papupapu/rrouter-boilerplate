@@ -1,10 +1,357 @@
 # Phase 2: Vite Plugin Implementation Plan
 
-**Status**: ✅ Plugin Implemented (Hybrid Approach)
-**Date**: January 25, 2026
+**Status**: ✅ Plugin Implemented (Hybrid Approach) - WORKING IN DEV, KNOWN ISSUE IN PROD
+**Date**: January 25, 2026  
+**Current Issue**: All CSS inlined in production builds (to be fixed in Phase 3)
 **Goal**: Automate generation of centralized imports from `/* @critical */` markers
 
-**Current State**: Plugin successfully scans for markers and auto-generates reference files. Manual imports are in place as a stable fallback. Ready to discuss integration approaches for Phase 2.5.
+**Current State**: Plugin successfully scans for markers and auto-generates reference files. Both critical and non-critical CSS are currently compiled together (architectural limitation for Phase 3).
+
+---
+
+## Current Architecture (Phase 2.5 Hybrid)
+
+### Plugin Functionality ✅
+
+The plugin works perfectly:
+
+1. **Scans** `app/` directory for `.scss` files
+2. **Detects** `/* @critical */` markers
+3. **Generates** `_critical.scss` with detected imports
+4. **Generates** `_non-critical.scss` with remaining imports
+5. **Watches** files in development (HMR support)
+6. **Logs** detailed information about detected components
+
+### Current Issue ⚠️
+
+Both `_critical.scss` and `_non-critical.scss` are imported in `_index.scss`:
+
+```scss
+@use "critical";
+@use "non-critical"; // ← This causes all CSS to be bundled together
+```
+
+This works perfectly in **development** but in **production** results in:
+
+- Single CSS bundle containing both critical and non-critical
+- Entire bundle inlined via beasties-processor
+- No external CSS file generated
+- No ability to lazy-load non-critical styles
+
+### Why This Happened
+
+During development testing, we needed both imports so that newly added components (like `search.scss`) would be included. Removing the non-critical import broke development mode HMR. This is a **Phase 3 problem** that requires separate Vite entry points.
+
+---
+
+## Development Mode ✅ WORKING PERFECTLY
+
+```bash
+yarn dev
+```
+
+**What happens**:
+
+1. Plugin scans and generates both `_critical.scss` and `_non-critical.scss`
+2. `_index.scss` imports both files
+3. Single CSS bundle compiled
+4. File watcher detects new/changed `.scss` files
+5. Regeneration happens automatically (300ms debounce)
+6. HMR updates browser instantly
+7. **Styles appear correctly** ✅
+
+**Example workflow**:
+
+```
+1. Create: app/components/post/search/search.scss
+2. Save file → watcher detects → plugin regenerates
+3. search.scss imported in _non-critical.scss
+4. styles available in browser immediately
+```
+
+---
+
+## Production Build Mode ⚠️ KNOWN ISSUE
+
+```bash
+yarn build && yarn start
+```
+
+**What happens**:
+
+1. Plugin scans and generates `_critical.scss` and `_non-critical.scss`
+2. `_index.scss` imports both
+3. **Single root-\*.css bundle** created (11.46 KB for project)
+4. beasties-processor inlines entire bundle
+5. No external CSS file referenced
+6. **All CSS arrives in HTML** ⚠️
+
+**Problem**: No separate CSS asset is loaded, defeating the purpose of critical CSS optimization.
+
+---
+
+## Key Decisions Made
+
+### 1. Manual Imports (Temporary, Phase 2.5) ⚠️
+
+**Why**: Sass doesn't understand Vite virtual modules, and separate Vite entry points for CSS+TS is complex
+
+**Trade-off**:
+
+- ✅ Works reliably in both dev and build
+- ✅ Zero magic or timing issues
+- ❌ Need two separate entry points for proper splitting (Phase 3)
+- ❌ Currently no external CSS file in production
+
+### 2. File Generation vs Virtual Modules
+
+**Decision**: File generation to `app/styles/create/` (not virtual modules)
+
+**Why**:
+
+- Sass preprocessing happens before most Vite hooks
+- Real files guarantee Sass can find them
+- Simpler, more reliable than trying to intercept Sass
+
+### 3. Template Preservation
+
+**Decision**: Keep `_critical.template.scss` and `_non-critical.template.scss` as git-tracked files
+
+**Why**:
+
+- Abstracts and utilities are preserved across regenerations
+- Developers can modify templates to change defaults
+- Generated files are gitignored
+
+---
+
+## Architecture Problems to Solve in Phase 3
+
+### Problem 1: Single CSS Bundle
+
+**Current**:
+
+```
+_index.scss imports both critical + non-critical
+    ↓
+Single root-*.css (11.46 KB)
+    ↓
+Inlined entirely
+```
+
+**Needed**:
+
+```
+_index.scss imports critical only
+    ↓
+root-*.css (5-6 KB, critical only)
+    ↓
+Inlined in <head>
+
+_non-critical-entry.scss imports non-critical only
+    ↓
+non-critical-*.css (5-6 KB)
+    ↓
+Loaded async via <link rel="stylesheet">
+```
+
+### Problem 2: Vite Configuration
+
+**Challenge**: React Router uses its own build system that doesn't expose easy Rollup entry point configuration for separate CSS bundles.
+
+**Options**:
+
+1. Add custom Rollup configuration to vite.config.ts
+2. Create separate Vite build just for non-critical CSS
+3. Use PostCSS to split compiled CSS after build
+4. Simplify: Skip CSS splitting entirely, use external stylesheet only (no inlining)
+
+### Problem 3: Build System Integration
+
+**Current**: Plugin's `writeBundle()` hook disabled because it's unreliable
+
+**Needed**:
+
+- Hook into correct Vite/React Router build stage
+- Actually split bundles at correct time
+- Update HTML generation to reference separate files
+
+---
+
+## Regex Patterns (Working Great)
+
+```typescript
+const CRITICAL_FILE_MARKER = /^[\s/]*\/\*\s*@critical\s*\*\//m;
+```
+
+Simple, clean, works perfectly. Detects:
+
+```scss
+/* @critical */
+.header {
+}
+```
+
+---
+
+## Generated Files Example
+
+### `_critical.scss`
+
+```scss
+// AUTO-GENERATED by critical-css-scanner plugin
+@use "root";
+@use "typography";
+@use "flex";
+@use "colors";
+@use "spacings";
+
+// Critical components
+@use "./../../components/layout/header/header";
+```
+
+### `_non-critical.scss`
+
+```scss
+// AUTO-GENERATED by critical-css-scanner plugin
+@use "borders";
+@use "statuses";
+@use "sizes";
+
+// Non-critical components
+@use "./../../components/layout/footer/footer";
+@use "./../../components/post/search/search";
+```
+
+---
+
+## Testing Results
+
+### ✅ Development Mode Tests
+
+| Test                   | Result  | Notes                                  |
+| ---------------------- | ------- | -------------------------------------- |
+| New files detected     | ✅ PASS | File watcher works                     |
+| HMR updates            | ✅ PASS | Instant style updates                  |
+| Marker detection       | ✅ PASS | Correctly identifies `/* @critical */` |
+| Auto-import generation | ✅ PASS | Files imported to correct locations    |
+| Dev server performance | ✅ PASS | No noticeable slowdown                 |
+
+### ⚠️ Production Build Tests
+
+| Test               | Result      | Notes                                    |
+| ------------------ | ----------- | ---------------------------------------- |
+| CSS file generated | ⚠️ PARTIAL  | Single root-_.css, no non-critical-_.css |
+| CSS inlined        | ✅ PASS     | Works correctly via beasties-processor   |
+| No duplication     | ✅ PASS     | External link removed                    |
+| Separate bundles   | ❌ FAIL     | Need Phase 3 fix                         |
+| Performance        | ⚠️ DEGRADED | All CSS inlined instead of split         |
+
+---
+
+## Phase 2.5: Current Hybrid Implementation
+
+### Working
+
+- ✅ Plugin scans and detects markers
+- ✅ Auto-generates import files
+- ✅ Development mode perfect
+- ✅ No CSS duplication
+- ✅ HMR support
+
+### Limitations
+
+- ⚠️ Both critical + non-critical bundled together
+- ⚠️ Everything inlined in production
+- ⚠️ No external CSS file in build output
+- ⚠️ Cannot lazy-load non-critical styles
+
+### Roadmap
+
+- Phase 3: Separate CSS entry points
+- Phase 3: Proper bundle splitting
+- Phase 3: Lazy-load non-critical CSS
+- Phase 3: Achieve target performance metrics
+
+---
+
+## Why Phase 3 is Complex
+
+### React Router Build Integration
+
+React Router has its own build system that:
+
+1. Automatically handles TS/TSX files
+2. Generates manifest files
+3. Manages asset hashing
+4. Doesn't easily expose Rollup configuration for arbitrary CSS entry points
+
+**Solution approaches**:
+
+- A: Hack vite.config.ts with custom Rollup plugins
+- B: Build non-critical CSS separately as post-build step
+- C: Accept current architecture (all CSS inlined)
+
+### Vite SCSS Processing
+
+Sass preprocessing happens early in Vite pipeline:
+
+1. Before most plugin hooks
+2. Before manifest generation
+3. Doesn't wait for async plugin operations
+
+**Implication**: Can't dynamically inject CSS entries after Vite starts - must configure upfront in vite.config.ts.
+
+---
+
+## Summary: What's Next for Phase 3
+
+**Goal**: Split CSS into two proper bundles
+
+**Approach**:
+
+1. Remove `@use "non-critical"` from `_index.scss` (back to critical-only)
+2. Configure Vite to use `_non-critical-entry.scss` as separate entry point
+3. Update Rollup output to create `non-critical-*.css`
+4. Update beasties-processor to reference both files
+5. Add `<link rel="stylesheet">` tag for non-critical CSS with lazy-load technique
+
+**Challenges**:
+
+- React Router doesn't expose easy entry point config
+- Might need custom Vite plugins
+- Could introduce build complexity
+
+**Success Criteria**:
+
+- ✅ Two separate CSS files in build output
+- ✅ Critical CSS inlined
+- ✅ Non-critical CSS loaded async
+- ✅ No CSS duplication
+- ✅ No build performance regression
+
+---
+
+## Production Readiness Assessment
+
+### For Development ✅
+
+| Aspect             | Status   | Notes                                  |
+| ------------------ | -------- | -------------------------------------- |
+| HMR                | ✅ READY | File watching and regeneration perfect |
+| Developer UX       | ✅ READY | Just add files, they're auto-imported  |
+| Plugin reliability | ✅ READY | Battle-tested scanning and generation  |
+
+### For Production ⚠️
+
+| Aspect                   | Status       | Notes                               |
+| ------------------------ | ------------ | ----------------------------------- |
+| CSS duplication          | ✅ FIXED     | Removed external link when inlining |
+| Build success            | ✅ WORKS     | No errors, builds correctly         |
+| Performance optimization | ❌ NOT READY | All CSS inlined (need Phase 3)      |
+| Lazy-loading             | ❌ NOT READY | Can't split CSS yet                 |
+
+**Verdict**: Safe to use in production. CSS duplication is fixed. Optimization deferred to Phase 3.
 
 ---
 

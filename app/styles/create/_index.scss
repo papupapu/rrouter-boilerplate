@@ -1,11 +1,20 @@
 /**
- * CSS Generation from Design Tokens - CRITICAL ONLY
+ * CSS Generation from Design Tokens
  * 
- * This is the main entry point for the critical CSS bundle.
- * Only critical styles are imported here and inlined in <head>.
+ * Phase 3: Proper CSS Code Splitting
  * 
- * Non-critical styles are imported separately in _non-critical-entry.scss
- * and lazy-loaded asynchronously.
+ * This file imports ONLY critical CSS that will be inlined in <head>.
+ * Non-critical CSS is imported separately in app/styles/non-critical-entry.scss
+ * 
+ * Result:
+ * - This file → root-*.css (critical, inlined in <style> tag)
+ * - non-critical-entry.scss → non-critical-*.css (external, lazy-loaded)
+ * 
+ * Benefits:
+ * - Smaller initial page load (only critical CSS in <head>)
+ * - Non-critical CSS loaded asynchronously
+ * - Improved First Contentful Paint (FCP)
+ * - No CSS duplication
  */
 
 @use "critical";

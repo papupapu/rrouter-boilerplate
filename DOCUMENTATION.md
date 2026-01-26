@@ -365,11 +365,16 @@ To verify token values:
 
 This project implements **critical CSS inlining** to improve First Contentful Paint (FCP) and overall page load performance. Critical CSS is the minimum CSS required to render above-the-fold content immediately, without waiting for external stylesheet downloads.
 
+**Current Status**: Phase 2.5 (Hybrid Approach)
+
+- ✅ Development mode: Perfect, all styles appear with HMR
+- ⚠️ Production mode: All CSS inlined (known issue for Phase 3)
+
 ### How It Works
 
 1. **Shell Buffering**: The server-side rendering (SSR) entry point uses a Node.js Transform stream to buffer HTML chunks
 2. **Shell Detection**: When the `</head>` tag is detected, the shell is considered complete
-3. **CSS Injection**: Critical CSS is extracted from the build output and injected as an inline `<style>` tag in the HTML head
+3. **CSS Injection**: CSS is extracted from the build output and injected as an inline `<style>` tag in the HTML head
 4. **Streaming**: After the head is processed, the remaining body content streams normally
 
 ### Architecture
@@ -384,8 +389,31 @@ This project implements **critical CSS inlining** to improve First Contentful Pa
 
 - Reads CSS file from build output (`build/client/assets/`)
 - Injects full CSS as inline `<style id="critical-css">` tag before `</head>`
+- **Removes external CSS link tag** from head section (prevents duplication)
 - Handles errors gracefully with fallback to original HTML
 - Production-only (skipped in development via `import.meta.env.PROD`)
+
+### Current Limitation (Phase 2.5)
+
+**Both critical and non-critical CSS are currently compiled into a single bundle and all inlined.** This is a temporary limitation while the build system transitions to proper CSS code splitting.
+
+**Why this happens**:
+
+- `app/styles/create/_index.scss` imports both `@use "critical"` and `@use "non-critical"`
+- Vite creates single CSS bundle from both imports
+- beasties-processor inlines the entire bundle
+- Result: All CSS arrives inline, no external stylesheet
+
+**Why it was necessary**:
+
+- Development mode needs both imports so that HMR works correctly
+- New components are auto-detected via plugin and should appear immediately
+- Removing non-critical import would break development experience
+
+**Phase 3 Solution**: Separate CSS entry points will split into:
+
+- `root-*.css` (critical only, inlined)
+- `non-critical-*.css` (external, lazy-loaded)
 
 ### Marking Styles as Critical vs Non-Critical
 

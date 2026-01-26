@@ -4,6 +4,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import { visualizer } from "rollup-plugin-visualizer";
 import { beasties } from "vite-plugin-beasties";
 import { criticalCssScanner } from "./vite-plugins/critical-css-scanner";
+import { cssCompiledSeparatelyPlugin } from "./vite-plugins/css-compiled-separately";
 
 const beastiesConfig = beasties({
   preload: "swap",
@@ -21,6 +22,7 @@ export default defineConfig({
       ...beastiesConfig,
       apply: "build",
     },
+    cssCompiledSeparatelyPlugin(), // Compile non-critical CSS separately after build
     visualizer({
       open: true,
       gzipSize: true,
