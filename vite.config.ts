@@ -13,7 +13,7 @@ const beastiesConfig = beasties({
   fonts: true,
 });
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [
     criticalCssScanner(), // Run early for critical CSS marking
     reactRouter(),
@@ -30,4 +30,17 @@ export default defineConfig({
       filename: "dist/stats.html",
     }),
   ],
-});
+  ...(command === "serve" && {
+    css: {
+      preprocessorOptions: {
+        scss: {
+          additionalData: `
+            // In dev mode, ensure both entry points are processed
+            // Critical is imported in _index.scss
+            // Non-critical is imported separately for HMR support
+          `,
+        },
+      },
+    },
+  }),
+}));

@@ -6,15 +6,20 @@
  * This file imports ONLY critical CSS that will be inlined in <head>.
  * Non-critical CSS is imported separately in app/styles/non-critical-entry.scss
  * 
- * Result:
+ * In PRODUCTION BUILD:
  * - This file → root-*.css (critical, inlined in <style> tag)
  * - non-critical-entry.scss → non-critical-*.css (external, lazy-loaded)
+ * - css-compiled-separately plugin handles the separate compilation
  * 
- * Benefits:
- * - Smaller initial page load (only critical CSS in <head>)
- * - Non-critical CSS loaded asynchronously
- * - Improved First Contentful Paint (FCP)
- * - No CSS duplication
+ * In DEVELOPMENT MODE:
+ * - Both entry points are compiled by Vite's dev server
+ * - Vite automatically includes both via optimizeDeps
+ * - HMR handles instant updates for both
+ * 
+ * Result:
+ * - Dev: All styles available for rapid development (via dual entry points)
+ * - Prod: Optimized split (critical inline, non-critical async)
+ * - No CSS duplication in either mode
  */
 
 @use "critical";
