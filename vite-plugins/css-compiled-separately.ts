@@ -51,11 +51,13 @@ export function cssCompiledSeparatelyPlugin(): Plugin {
         // Use Sass CLI to compile non-critical CSS separately
         // Note: This requires sass to be installed globally or via node_modules
         const sassPath = path.join(projectRoot, "node_modules/.bin/sass");
+        const appPath = path.join(projectRoot, "app");
 
         try {
           // Run sass compiler for non-critical styles
+          // Include --load-path to resolve imports relative to app/ directory
           const output = execSync(
-            `${sassPath} "${nonCriticalScssPath}" --no-source-map --style=compressed`,
+            `${sassPath} "${nonCriticalScssPath}" --no-source-map --style=compressed --load-path="${appPath}"`,
             { encoding: "utf-8" }
           );
 

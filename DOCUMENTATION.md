@@ -178,25 +178,79 @@ app/components/            # Component styles (auto-imported)
 
 ### Using Tokens
 
-**In components**: Use CSS variables or Sass variables from abstracts:
+#### Option 1: CSS Variables (Recommended for Dynamic Values)
+
+Use CSS custom properties from the abstracts in component SCSS:
 
 ```scss
-/* @critical */ // Optional: mark for inlining
+/* @critical */
 
 .header {
-  background: var(--c-primary-500); // CSS variable from abstracts
+  background: var(--c-primary-500); // Color token
   padding: var(--sp-300); // Spacing token
   font-weight: var(--tp-weight-bold); // Typography token
 }
 ```
 
-**In HTML**: Apply generated utility classes:
+**Pros**: Works at runtime, can be overridden, no import needed in component  
+**Cons**: Less type-safe in SCSS
+
+#### Option 2: Sass Variables (Recommended for Static Values & Type Safety)
+
+Import abstracts directly in your component SCSS to access Sass variables and maps:
+
+```scss
+/* @critical */
+
+// Step 1: Import the abstract modules you need
+// Sass is configured to load from app/ directory, so all paths are relative to app/
+@use "styles/abstracts/colors" as *;
+@use "styles/abstracts/typography" as *;
+@use "styles/abstracts/spacings" as *;
+
+// Step 2: Use variables directly
+.header {
+  background-color: $bg-brand; // Single variable
+  color: $txt-inverse; // Text color
+  padding: map.get($spacings, "300"); // From spacing map
+
+  &--light {
+    background-color: $bg-brand-light;
+  }
+}
+
+.header__title {
+  font-size: map.get($typography, "size-lg"); // From typography map
+  font-weight: $font-weight-bold;
+}
+```
+
+**Pros**: Type-safe, better IDE support, easier to use maps and functions  
+**Cons**: Must import in each component file
+
+#### Option 3: Utility Classes (Best for Rapid Prototyping)
+
+Apply generated utility classes directly in HTML:
 
 ```tsx
 <div className="c-bg--primary c-txt--secondary tp-w--bold sp-p--200">
   Styled content
 </div>
 ```
+
+**Pros**: Fastest for simple styling, no SCSS needed  
+**Cons**: Can lead to long class names, less semantic
+
+#### Path Resolution
+
+All imports are configured to resolve relative to the `app/` directory via Sass `loadPaths`. Use simple paths:
+
+```scss
+@use "styles/abstracts/colors" as *; // Works from any component
+@use "styles/abstracts/typography" as *; // No matter where it's located
+```
+
+This is configured in [vite.config.ts](vite.config.ts) for consistent imports across all components.
 
 ### Critical CSS System (Production-Ready)
 

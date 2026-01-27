@@ -1,5 +1,15 @@
 /* @critical */
 
+// Import design tokens to use Sass variables in this component
+// Sass is configured with loadPaths: ["app"], so use paths relative to app/
+@use "styles/abstracts/colors" as *;
+@use "styles/abstracts/typography" as *;
+@use "styles/abstracts/spacings" as *;
+
 .header {
   transition: all 0.3s ease;
+  // Example using Sass variables:
+  // background-color: $bg-brand;
+  // color: $txt-inverse;
+  // padding: map.get($spacings, "200");
 }

@@ -1,3 +1,13 @@
+// Import design tokens to use Sass variables in this component
+// Sass is configured with loadPaths: ["app"], so use paths relative to app/
+@use "styles/abstracts/colors" as *;
+@use "styles/abstracts/typography" as *;
+@use "styles/abstracts/spacings" as *;
+
 .footer {
   min-height: 100px;
+  // Example using Sass variables:
+  background-color: $bg-fourth;
+  // color: $txt-secondary;
+  // padding: map.get($spacings, "200");
 }

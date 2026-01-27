@@ -511,6 +511,166 @@ $ yarn dev
 
 ---
 
+### Using Sass Variables in Components ⭐ Beginner
+
+**Scenario**: You want to access Sass variables like `$bg-brand`, `$txt-primary`, or color maps in your component SCSS
+
+**Problem**: Trying to use `$bg-brand` directly results in "Undefined variable" error
+
+**Solution**: Import the abstract module explicitly in your component SCSS file. Sass is configured with loadPaths to find imports relative to the `app/` directory.
+
+#### Step-by-Step Example
+
+**Step 1: Identify which abstracts you need**
+
+Looking at [app/styles/abstracts/\_colors.scss](app/styles/abstracts/_colors.scss), you have access to:
+
+- `$txt-*` and `$bg-*` - Individual color variables
+- `$text`, `$background`, `$border` - Maps of related colors
+
+**Step 2: Add imports at top of component file (use app-relative paths)**
+
+```scss
+/* @critical */
+
+// Import the abstracts you need
+// Sass loadPaths is configured to resolve from app/ directory
+@use "styles/abstracts/colors" as *;
+@use "styles/abstracts/typography" as *;
+@use "styles/abstracts/spacings" as *;
+
+// Now you can use the variables!
+.header {
+  background-color: $bg-brand; // ✅ Single variable
+  color: $txt-inverse; // ✅ Text color
+  padding: map.get($spacings, "300"); // ✅ From spacing map
+}
+
+.header__title {
+  font-size: map.get($typography, "size-lg"); // ✅ From typography map
+  font-weight: $font-weight-bold;
+}
+```
+
+**Step 3: Build and verify**
+
+```bash
+yarn dev
+```
+
+- DevTools → Elements → Check the `<style id="critical-css">` tag
+- You should see your header styles with the actual color values (e.g., `background-color: #e4002b`)
+
+#### Import Strategy: When to Use `as *` vs `as colors`
+
+| Style                       | Example                      | Best For                  |
+| --------------------------- | ---------------------------- | ------------------------- |
+| Global scope (`as *`)       | `@use "colors" as *;`        | Simple components         |
+| Namespaced scope (`as xyz`) | `@use "colors" as c;`        | Large components, clarity |
+| Multiple imports (`as *`)   | Import colors, spacing, etc. | Most common approach      |
+
+**Most Common Pattern** (recommended for simplicity):
+
+```scss
+@use "styles/abstracts/colors" as *;
+@use "styles/abstracts/typography" as *;
+@use "styles/abstracts/spacings" as *;
+
+// Everything is global—just use $variable directly
+```
+
+#### Available Abstracts to Import
+
+You can import any of these modules from anywhere in your project:
+
+```scss
+@use "styles/abstracts/colors"; // $bg-*, $txt-*, $br-*, maps
+@use "styles/abstracts/typography"; // Typography sizes, weights, families
+@use "styles/abstracts/spacings"; // Spacing scale map
+@use "styles/abstracts/sizes"; // Dimension sizes
+@use "styles/abstracts/borders"; // Border token
+@use "styles/abstracts/flex"; // Flex utilities
+@use "styles/abstracts/dimensions"; // Dimension tokens
+@use "styles/abstracts/breakpoints"; // Media query breakpoints
+@use "styles/abstracts/functions"; // Sass functions (if any)
+@use "styles/abstracts/mixins"; // Sass mixins
+@use "styles/abstracts/statuses"; // Status colors (success, error, etc.)
+```
+
+#### Real Example: Header Component
+
+```scss
+/* @critical */
+
+@use "styles/abstracts/colors" as *;
+@use "styles/abstracts/typography" as *;
+@use "styles/abstracts/spacings" as *;
+
+.header {
+  display: flex;
+  align-items: center;
+  background-color: $bg-brand;
+  color: $txt-inverse;
+  padding: map.get($spacings, "400");
+  gap: map.get($spacings, "300");
+  border-bottom: 1px solid $br-secondary;
+
+  &:hover {
+    background-color: $bg-brand-hover;
+  }
+}
+
+.header__logo {
+  font-size: map.get($typography, "size-xl");
+  font-weight: $font-weight-bold;
+}
+
+.header__nav {
+  display: flex;
+  gap: map.get($spacings, "200");
+  margin-left: auto;
+}
+
+.header__link {
+  color: inherit;
+  text-decoration: none;
+  padding: map.get($spacings, "100");
+  border-radius: 4px;
+  transition: background-color 200ms ease;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+}
+```
+
+#### Troubleshooting
+
+| Problem                    | Solution                                                                      |
+| -------------------------- | ----------------------------------------------------------------------------- |
+| "Undefined variable error" | Check import is correct: `@use "styles/abstracts/colors" as *;`               |
+| "Can't find stylesheet"    | Verify abstract file exists in [app/styles/abstracts/](app/styles/abstracts/) |
+| IDE not auto-completing    | Verify path is correct; restart IDE if needed                                 |
+| Map key not found          | Check map name in abstract file (e.g., `$spacings`, `$typography`)            |
+
+#### Configuration
+
+The Sass loadPaths is configured in [vite.config.ts](vite.config.ts):
+
+```typescript
+css: {
+  preprocessorOptions: {
+    scss: {
+      loadPaths: [path.resolve(__dirname, "app")],
+    },
+  },
+}
+```
+
+This allows all SCSS imports to resolve relative to the `app/` directory, making paths consistent across all component locations.
+
+---
+
 ## Marker System ⭐ Beginner
 
 ### Marker Syntax
