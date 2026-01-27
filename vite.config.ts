@@ -16,7 +16,7 @@ export default defineConfig(() => ({
     tsconfigPaths(),
     {
       ...beastiesConfig,
-      apply: "build",
+      apply: "build" as const,
     },
     cssCompiledSeparatelyPlugin(), // Compile non-critical CSS separately after build
     visualizer({
