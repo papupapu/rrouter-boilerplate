@@ -1,6 +1,6 @@
 # Critical CSS Implementation Guide
 
-**Status**: ✅ Production-Ready (Phase 4 Complete)  
+**Status**: Production-Ready  
 **Last Updated**: January 26, 2026  
 **Version**: 1.0.0
 
@@ -150,111 +150,110 @@ Non-Critical CSS (lazy-loaded):
 
 ## How It Works
 
-### The Complete Journey (Step-by-Step)
+### The Complete Journey
 
-#### Phase 1: Marking (What Developers Do)
+The system automatically transforms marked components into two CSS bundles through five sequential stages:
 
-```
-1. Developer creates a component file:
-   app/components/button/button.scss
+#### Marking Components
 
-2. If it's above-the-fold (header, nav, etc.):
-   Add /* @critical */ at the top
-
-3. If it's below-the-fold or optional (modal, tooltip, etc.):
-   Leave it unmarked (default = non-critical)
-
-Result: Component files have a marker comment → Plugin reads it
-```
-
-#### Phase 2: Auto-Generation (What Plugin Does During Build)
+Developers mark components as critical by adding a comment at the top of the SCSS file:
 
 ```
-Plugin runs in two stages:
+1. Create component: app/components/button/button.scss
+2. If above-the-fold: Add /* @critical */ at line 1
+3. If below-the-fold: Leave unmarked (default = non-critical)
+Result: Plugin scans comment to determine bundle placement
+```
 
-Stage 1: Vite config hook
+#### Scanning and Generating
+
+The plugin detects components and generates import files:
+
+```
+Stage 1: Vite config initialization
 ┌────────────────────────────────────┐
 │ critical-css-scanner.ts           │
 ├────────────────────────────────────┤
-│ 1. Read: app/styles/abstracts/    │
-│    Find: _colors.scss, _typo.scss │
+│ 1. Scan: app/styles/abstracts/   │
+│    Detect: _colors.scss, _typo...│
 │                                    │
-│ 2. Read: app/components/          │
+│ 2. Scan: app/components/          │
 │    Find: header.scss /* @critical */
-│    Find: footer.scss (no marker)   │
+│    Find: footer.scss (no marker)  │
 │                                    │
 │ 3. Generate: _generated-critical  │
 │    @use "../../styles/abstracts/colors"
-│    @use "../../styles/abstracts/typography"
-│    @use "../../components/header/button"
+│    @use "../../components/header"│
 │                                    │
 │ 4. Generate: _generated-non-critical
-│    @use "../../components/footer"
-│    @use "../../components/search"
+│    @use "../../components/footer"│
+│    @use "../../components/search"│
 │                                    │
 │ 5. Write: app/.internal/critical-css/
-│    (gitignored, auto-managed)      │
+│    (auto-managed, gitignored)     │
 └────────────────────────────────────┘
 
-Stage 2: Vite build hook (after main build)
+Stage 2: Separate CSS compilation
 ┌────────────────────────────────────┐
 │ css-compiled-separately.ts         │
 ├────────────────────────────────────┤
-│ 1. Find non-critical entry point   │
-│    (app/styles/non-critical-entry) │
+│ 1. Locate non-critical entry point│
+│    (app/styles/non-critical-entry)│
 │                                    │
-│ 2. Compile with Sass CLI separately│
+│ 2. Compile via Sass CLI separately│
 │                                    │
-│ 3. Generate non-critical-*.css     │
-│    (separate from main bundle)     │
+│ 3. Generate non-critical-*.css    │
+│    (separate from main bundle)    │
 │                                    │
-│ 4. Place in build/client/assets/   │
+│ 4. Place in build/client/assets/  │
 └────────────────────────────────────┘
 ```
 
-#### Phase 3: Compilation (What Vite Does)
+#### Compilation
+
+Vite compiles SCSS entry points into two separate CSS files:
 
 ```
-SCSS Entry Points:
-├── app/styles/index.scss
-│   └── @use "../.internal/critical-css/generated-critical"
-│       └── Compiles to: root-*.css (critical CSS only)
-│
-└── app/styles/non-critical-entry.scss
-    └── @use "../.internal/critical-css/generated-non-critical"
-        └── Compiles to: non-critical-*.css (separate file)
+app/styles/index.scss (critical)
+├── @use "../.internal/critical-css/generated-critical"
+└── Compiles to: root-*.css (all design tokens + critical components)
+
+app/styles/non-critical-entry.scss (non-critical)
+├── @use "../.internal/critical-css/generated-non-critical"
+└── Compiles to: non-critical-*.css (non-critical components only)
 ```
 
-#### Phase 4: Inlining (What Server Does)
+#### Inlining and Delivery
+
+Server-side rendering inlines critical CSS and lazy-loads non-critical:
 
 ```
 During SSR (app/entry.server.tsx):
 
-beasties-processor.ts:
-1. Reads: build/client/assets/root-*.css (critical CSS)
-2. Inlines into: <style id="critical-css">...entire CSS...</style>
-3. Reads: build/client/assets/non-critical-*.css
-4. Adds: <link rel="stylesheet" media="print"
-         href="non-critical-*.css" onload="..."/>
-5. Removes: Original <link rel="stylesheet" href="root-*.css"/>
-   (prevents duplication)
+beasties-processor.ts handles HTML generation:
+1. Read: build/client/assets/root-*.css (critical CSS file)
+2. Inline: <style id="critical-css">...entire CSS...</style>
+3. Read: build/client/assets/non-critical-*.css
+4. Add: <link rel="stylesheet" media="print"
+        href="non-critical-*.css" onload="this.media='all'"/>
+5. Remove: Original <link rel="stylesheet" href="root-*.css"/>
+   (prevents duplicate loading)
 
-Result: HTML delivered with critical CSS ready, non-critical loading async
+Result: HTML delivered with critical CSS immediately available,
+non-critical CSS loaded asynchronously in background
 ```
 
 ---
 
 ## Directory Structure
 
-### Current Production Structure (Phase 4)
-
 ```
 app/
-├── .internal/                          ⭐ NEW: Auto-managed (don't touch!)
-│   ├── README.md                       (warning: auto-generated files)
+├── .internal/                          (auto-managed, do not edit)
+│   ├── README.md                       (auto-generated files)
 │   └── critical-css/
-│       ├── _generated-critical.scss    ✨ Auto-generated at build time
-│       └── _generated-non-critical.scss✨ Auto-generated at build time
+│       ├── _generated-critical.scss    (auto-generated at build time)
+│       └── _generated-non-critical.scss (auto-generated at build time)
 │
 ├── styles/
 │   ├── abstracts/                      ⭐ You add tokens here
@@ -311,23 +310,6 @@ app/
     │   └── home.tsx
     └── post/
         └── post.tsx
-```
-
-### What Changed From Manual to Automatic
-
-```
-BEFORE (Manual Management):
-└── app/styles/create/
-    ├── _critical.template.scss         ❌ DELETED (manual edits)
-    └── _non-critical.template.scss     ❌ DELETED (manual edits)
-    └── _critical.scss                  (generated from template)
-    └── _non-critical.scss              (generated from template)
-
-AFTER (Phase 4 Automatic):
-└── app/.internal/critical-css/
-    ├── _generated-critical.scss        ✨ 100% automatic
-    └── _generated-non-critical.scss    ✨ 100% automatic
-    (generated by scanning abstracts/ and components/)
 ```
 
 ---
@@ -393,29 +375,32 @@ $ yarn dev
 **Steps**:
 
 ```
-Step 1: Create component SCSS
+Step 1: Create component SCSS with Sass variable imports
 $ cat > app/components/button/button.scss << 'EOF'
+@use "styles/abstracts/colors" as *;
+@use "styles/abstracts/typography" as *;
+@use "styles/abstracts/spacings" as *;
+
 .btn {
-  padding: var(--dim--200);
-  border-radius: var(--radius-medium);
-  background-color: var(--c-primary-500);
-  color: white;
-  font-weight: var(--tp-weight-bold);
+  padding: map.get($spacings, "200");
+  border-radius: 4px;
+  background-color: $bg-primary;
+  color: $txt-inverse;
+  font-weight: map.get($typography, "l");
   cursor: pointer;
   transition: all 200ms ease;
 
   &:hover {
-    background-color: var(--c-primary-600);
-    box-shadow: var(--shadow-medium);
+    background-color: $bg-primary-hover;
   }
 }
 
 .btn--secondary {
-  background-color: var(--c-gray-200);
-  color: var(--c-gray-900);
+  background-color: $bg-secondary;
+  color: $txt-default;
 
   &:hover {
-    background-color: var(--c-gray-300);
+    background-color: $bg-secondary-hover;
   }
 }
 EOF
@@ -458,6 +443,54 @@ $ yarn dev
 4. ✅ Compiles to `non-critical-*.css` (lazy-loaded)
 5. ✅ Styles apply after CSS loads asynchronously
 
+#### Importing Sass Variables in Components
+
+To access design tokens in your component SCSS, import the abstract modules at the top of your file. Sass is configured with `loadPaths` to resolve imports relative to the `app/` directory.
+
+**Available abstracts to import**:
+
+```scss
+@use "styles/abstracts/colors"; // Color variables and maps
+@use "styles/abstracts/typography"; // Typography sizes, weights, families
+@use "styles/abstracts/spacings"; // Spacing scale
+@use "styles/abstracts/sizes"; // Dimension sizes
+@use "styles/abstracts/borders"; // Border tokens
+@use "styles/abstracts/flex"; // Flex utilities
+@use "styles/abstracts/dimensions"; // Dimension tokens
+@use "styles/abstracts/breakpoints"; // Media query breakpoints
+```
+
+**Import strategies**:
+
+| Style                     | Example                                | Best For                                     |
+| ------------------------- | -------------------------------------- | -------------------------------------------- |
+| Global scope (`as *`)     | `@use "styles/abstracts/colors" as *;` | Simple components, direct variable access    |
+| Namespaced scope (`as c`) | `@use "styles/abstracts/colors" as c;` | Large components, clarity with `c.$variable` |
+
+**Recommended pattern** (global scope for simplicity):
+
+```scss
+@use "styles/abstracts/colors" as *;
+@use "styles/abstracts/typography" as *;
+@use "styles/abstracts/spacings" as *;
+
+// Now use variables directly:
+.component {
+  color: $txt-primary; // Single variable
+  padding: map.get($spacings, "300"); // From map
+  font-weight: map.get($typography, "l"); // Font weight from map
+}
+```
+
+**Verifying in browser**:
+
+```bash
+yarn dev
+```
+
+- Open DevTools → Elements → Check `<style id="critical-css">` tag
+- You should see your component styles compiled with actual color values (e.g., `color: #1f2937`)
+
 ---
 
 ### Marking Components as Critical ⭐ Beginner
@@ -472,6 +505,10 @@ $ edit app/components/button/button.scss
   Add at line 1:
 
   /* @critical */
+
+  @use "styles/abstracts/colors" as *;
+  @use "styles/abstracts/typography" as *;
+  @use "styles/abstracts/spacings" as *;
 
   .btn {
     // ... rest of styles
@@ -511,164 +548,6 @@ $ yarn dev
 
 ---
 
-### Using Sass Variables in Components ⭐ Beginner
-
-**Scenario**: You want to access Sass variables like `$bg-brand`, `$txt-primary`, or color maps in your component SCSS
-
-**Problem**: Trying to use `$bg-brand` directly results in "Undefined variable" error
-
-**Solution**: Import the abstract module explicitly in your component SCSS file. Sass is configured with loadPaths to find imports relative to the `app/` directory.
-
-#### Step-by-Step Example
-
-**Step 1: Identify which abstracts you need**
-
-Looking at [app/styles/abstracts/\_colors.scss](app/styles/abstracts/_colors.scss), you have access to:
-
-- `$txt-*` and `$bg-*` - Individual color variables
-- `$text`, `$background`, `$border` - Maps of related colors
-
-**Step 2: Add imports at top of component file (use app-relative paths)**
-
-```scss
-/* @critical */
-
-// Import the abstracts you need
-// Sass loadPaths is configured to resolve from app/ directory
-@use "styles/abstracts/colors" as *;
-@use "styles/abstracts/typography" as *;
-@use "styles/abstracts/spacings" as *;
-
-// Now you can use the variables!
-.header {
-  background-color: $bg-brand; // ✅ Single variable
-  color: $txt-inverse; // ✅ Text color
-  padding: map.get($spacings, "300"); // ✅ From spacing map
-}
-
-.header__title {
-  font-size: map.get($typography, "size-lg"); // ✅ From typography map
-  font-weight: $font-weight-bold;
-}
-```
-
-**Step 3: Build and verify**
-
-```bash
-yarn dev
-```
-
-- DevTools → Elements → Check the `<style id="critical-css">` tag
-- You should see your header styles with the actual color values (e.g., `background-color: #e4002b`)
-
-#### Import Strategy: When to Use `as *` vs `as colors`
-
-| Style                       | Example                      | Best For                  |
-| --------------------------- | ---------------------------- | ------------------------- |
-| Global scope (`as *`)       | `@use "colors" as *;`        | Simple components         |
-| Namespaced scope (`as xyz`) | `@use "colors" as c;`        | Large components, clarity |
-| Multiple imports (`as *`)   | Import colors, spacing, etc. | Most common approach      |
-
-**Most Common Pattern** (recommended for simplicity):
-
-```scss
-@use "styles/abstracts/colors" as *;
-@use "styles/abstracts/typography" as *;
-@use "styles/abstracts/spacings" as *;
-
-// Everything is global—just use $variable directly
-```
-
-#### Available Abstracts to Import
-
-You can import any of these modules from anywhere in your project:
-
-```scss
-@use "styles/abstracts/colors"; // $bg-*, $txt-*, $br-*, maps
-@use "styles/abstracts/typography"; // Typography sizes, weights, families
-@use "styles/abstracts/spacings"; // Spacing scale map
-@use "styles/abstracts/sizes"; // Dimension sizes
-@use "styles/abstracts/borders"; // Border token
-@use "styles/abstracts/flex"; // Flex utilities
-@use "styles/abstracts/dimensions"; // Dimension tokens
-@use "styles/abstracts/breakpoints"; // Media query breakpoints
-@use "styles/abstracts/functions"; // Sass functions (if any)
-@use "styles/abstracts/mixins"; // Sass mixins
-@use "styles/abstracts/statuses"; // Status colors (success, error, etc.)
-```
-
-#### Real Example: Header Component
-
-```scss
-/* @critical */
-
-@use "styles/abstracts/colors" as *;
-@use "styles/abstracts/typography" as *;
-@use "styles/abstracts/spacings" as *;
-
-.header {
-  display: flex;
-  align-items: center;
-  background-color: $bg-brand;
-  color: $txt-inverse;
-  padding: map.get($spacings, "400");
-  gap: map.get($spacings, "300");
-  border-bottom: 1px solid $br-secondary;
-
-  &:hover {
-    background-color: $bg-brand-hover;
-  }
-}
-
-.header__logo {
-  font-size: map.get($typography, "size-xl");
-  font-weight: $font-weight-bold;
-}
-
-.header__nav {
-  display: flex;
-  gap: map.get($spacings, "200");
-  margin-left: auto;
-}
-
-.header__link {
-  color: inherit;
-  text-decoration: none;
-  padding: map.get($spacings, "100");
-  border-radius: 4px;
-  transition: background-color 200ms ease;
-
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-}
-```
-
-#### Troubleshooting
-
-| Problem                    | Solution                                                                      |
-| -------------------------- | ----------------------------------------------------------------------------- |
-| "Undefined variable error" | Check import is correct: `@use "styles/abstracts/colors" as *;`               |
-| "Can't find stylesheet"    | Verify abstract file exists in [app/styles/abstracts/](app/styles/abstracts/) |
-| IDE not auto-completing    | Verify path is correct; restart IDE if needed                                 |
-| Map key not found          | Check map name in abstract file (e.g., `$spacings`, `$typography`)            |
-
-#### Configuration
-
-The Sass loadPaths is configured in [vite.config.ts](vite.config.ts):
-
-```typescript
-css: {
-  preprocessorOptions: {
-    scss: {
-      loadPaths: [path.resolve(__dirname, "app")],
-    },
-  },
-}
-```
-
-This allows all SCSS imports to resolve relative to the `app/` directory, making paths consistent across all component locations.
-
 ---
 
 ## Marker System ⭐ Beginner
@@ -697,22 +576,26 @@ All markers use simple comment syntax that Sass ignores:
 ```scss
 /* @critical */
 
+@use "styles/abstracts/colors" as *;
+@use "styles/abstracts/spacings" as *;
+@use "styles/abstracts/typography" as *;
+
 .header {
   display: flex;
   align-items: center;
-  padding: var(--sp-300);
-  background: var(--c-primary-500);
+  padding: map.get($spacings, "300");
+  background: $bg-primary;
 }
 
 .header__logo {
-  font-size: var(--tp-size-xl);
-  font-weight: var(--tp-weight-bold);
-  color: white;
+  font-size: map.get($typography, "xl");
+  font-weight: map.get($typography, "l");
+  color: $txt-inverse;
 }
 
 .header__nav {
   display: flex;
-  gap: var(--sp-200);
+  gap: map.get($spacings, "200");
   margin-left: auto;
 }
 ```
@@ -723,6 +606,8 @@ All markers use simple comment syntax that Sass ignores:
 
 ```scss
 // No marker = non-critical by default
+
+@use "styles/abstracts/spacings" as *;
 
 .modal {
   position: fixed;
@@ -740,8 +625,8 @@ All markers use simple comment syntax that Sass ignores:
 
 .modal__content {
   background: white;
-  padding: var(--sp-400);
-  border-radius: var(--radius-lg);
+  padding: map.get($spacings, "400");
+  border-radius: 4px;
 }
 ```
 
@@ -753,24 +638,28 @@ All markers use simple comment syntax that Sass ignores:
 // Explicit non-critical marker (optional, for clarity)
 /* @non-critical */
 
+@use "styles/abstracts/colors" as *;
+@use "styles/abstracts/spacings" as *;
+@use "styles/abstracts/typography" as *;
+
 .tooltip {
   position: absolute;
-  background: var(--c-gray-900);
-  color: white;
-  padding: var(--sp-100) var(--sp-200);
-  border-radius: var(--radius-sm);
-  font-size: var(--tp-size-sm);
+  background: $bg-dark;
+  color: $txt-inverse;
+  padding: map.get($spacings, "100") map.get($spacings, "200");
+  border-radius: 4px;
+  font-size: map.get($typography, "sm");
   z-index: 1000;
 }
 
 .tooltip--top {
   bottom: 100%;
-  margin-bottom: var(--sp-100);
+  margin-bottom: map.get($spacings, "100");
 }
 
 .tooltip--bottom {
   top: 100%;
-  margin-top: var(--sp-100);
+  margin-top: map.get($spacings, "100");
 }
 ```
 
@@ -1125,7 +1014,7 @@ The build uses **two separate entry points** to create two CSS files:
 
 ```scss
 /**
- * Non-Critical CSS Entry Point (Phase 4)
+ * Non-Critical CSS Entry Point
  *
  * This file compiles to a separate CSS bundle that is
  * loaded asynchronously after the page renders.
@@ -1858,8 +1747,6 @@ $ Hard refresh if needed: Cmd+Shift+R or Ctrl+Shift+R
 
 - ❌ `app/.internal/critical-css/_generated-critical.scss` (auto-generated)
 - ❌ `app/.internal/critical-css/_generated-non-critical.scss` (auto-generated)
-- ❌ `app/styles/create/_critical.template.scss` (doesn't exist in Phase 4)
-- ❌ `app/styles/create/_non-critical.template.scss` (doesn't exist in Phase 4)
 
 ✅ Only create/edit:
 
@@ -2131,7 +2018,7 @@ If plugin fails:
 - ✅ No external dependencies
 - ✅ Graceful fallbacks
 - ✅ Works in all modern browsers + IE 11
-- ✅ Phase 4 implementation complete and stable
+- ✅ Production-ready and stable
 
 Current deployment status:
 
@@ -2158,3 +2045,18 @@ Critical CSS is a **fully automated system** that handles CSS optimization for y
 **No manual template edits. No complicated configuration. Just create files and the system handles the rest.**
 
 For questions or issues, refer to the [Troubleshooting](#troubleshooting-⭐⭐-advanced) section above.
+
+---
+
+## Appendix: Migration from Earlier Versions
+
+If you're upgrading from earlier versions of this project, the following changes have been made:
+
+**Earlier versions** required manual edits to template files (`_critical.template.scss`, `_non-critical.template.scss`) to add new components and design tokens to the critical/non-critical CSS bundles.
+
+**Current version** automatically generates critical and non-critical CSS imports by scanning the `app/styles/abstracts/` and `app/components/` directories. The plugin detects:
+
+- All design token files in abstracts (automatically marked as critical)
+- All component files in `app/components/` (marked critical/non-critical based on `/* @critical */` comment)
+
+**No manual template file edits are needed.** Simply create your component SCSS files and the system automatically adds them to the appropriate bundle at build time. This eliminates the previous manual maintenance step and ensures consistency across the codebase.
