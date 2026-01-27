@@ -1,8 +1,31 @@
-@use "typography";
-@use "spacings";
-@use "colors";
-@use "borders";
-@use "statuses";
-@use "flex";
+/**
+ * CSS Utility Class Generators
+ * 
+ * Phase 4: Auto-Import Abstracts & Reorganize Critical CSS
+ * 
+ * This file generates utility classes from design tokens.
+ * Design token imports are now handled automatically by:
+ * - app/styles/index.scss → imports from .internal/critical-css/generated-critical
+ * - app/styles/non-critical-entry.scss → imports from .internal/critical-css/generated-non-critical
+ * 
+ * This file ONLY generates utility classes that are used by both critical and non-critical CSS:
+ * - .c-txt-* (color text utilities)
+ * - .c-bg-* (color background utilities)
+ * - .tp-w-* (typography weight utilities)
+ * - .tp-s-* (typography size utilities)
+ * - Flex utilities
+ * - Spacing utilities
+ * - etc.
+ */
+
+// Define CSS custom properties from design tokens
 @use "root";
+
+// Generate utility classes from design tokens
+@use "borders";
+@use "colors";
+@use "flex";
 @use "sizes";
+@use "spacings";
+@use "statuses";
+@use "typography";

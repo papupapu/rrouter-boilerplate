@@ -1,0 +1,11 @@
+/**
+ * CSS Generation from Design Tokens - NON-CRITICAL ONLY
+ * 
+ * This is a separate entry point for the non-critical CSS bundle.
+ * These styles are async-loaded via <link> tag and are NOT inlined.
+ * 
+ * This file is only imported by vite.config.ts as a separate rollup input.
+ * It should NOT be imported by app/styles/index.scss.
+ */
+
+@use "non-critical";

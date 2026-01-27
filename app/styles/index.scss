@@ -1,5 +1,20 @@
+/**
+ * Main CSS Entry Point (Critical CSS Only)
+ * 
+ * This entry point imports auto-generated critical CSS from .internal/
+ * (all design tokens + components marked with @critical comment marker)
+ * 
+ * In PRODUCTION BUILD:
+ * - This file → root-*.css (critical CSS, inlined in <style> tag)
+ * - Separate entry point → non-critical-*.css (lazy-loaded)
+ * 
+ * In DEVELOPMENT MODE:
+ * - HMR instantly updates when abstracts or components change
+ * - All critical CSS available for styling
+ */
+
+// Auto-generated critical CSS (all abstracts + critical components)
+@use "../.internal/critical-css/generated-critical" as critical;
+
+// Utility class generators (from design tokens)
 @use "create/index" as create;
-@forward "abstracts/spacings";
-@forward "abstracts/colors";
-@forward "abstracts/typography";
-@forward "abstracts/mixins";

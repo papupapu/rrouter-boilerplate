@@ -13,6 +13,12 @@ import { LayoutProvider } from "./context/layout/layout";
 
 import "./app.scss";
 
+// In development mode, import non-critical CSS for HMR support
+// In production, non-critical CSS is lazy-loaded via beasties-processor
+if (import.meta.env.DEV) {
+  import("./styles/non-critical-entry.scss");
+}
+
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
