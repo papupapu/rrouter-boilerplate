@@ -52,7 +52,7 @@ Critical CSS (inlined in <head>):
 
 Non-Critical CSS (lazy-loaded):
 └── Components NOT marked (default behavior)
-    └── Examples: footer.scss, search.scss
+    └── Examples: footer.scss, modal.scss
 ```
 
 ---
@@ -302,8 +302,7 @@ app/
 │   │       └── footer.scss            (unmarked = non-critical)
 │   └── post/
 │       └── search/
-│           ├── search.tsx
-│           └── search.scss            (unmarked = non-critical)
+│           └── search.tsx
 │
 └── views/
     ├── home/
@@ -382,11 +381,11 @@ $ cat > app/components/button/button.scss << 'EOF'
 @use "styles/abstracts/spacings" as *;
 
 .btn {
-  padding: map.get($spacings, "200");
+  padding: $spacings-200;
   border-radius: 4px;
   background-color: $bg-primary;
   color: $txt-inverse;
-  font-weight: map.get($typography, "l");
+  font-family: @include tp-font('l');
   cursor: pointer;
   transition: all 200ms ease;
 
@@ -477,8 +476,8 @@ To access design tokens in your component SCSS, import the abstract modules at t
 // Now use variables directly:
 .component {
   color: $txt-primary; // Single variable
-  padding: map.get($spacings, "300"); // From map
-  font-weight: map.get($typography, "l"); // Font weight from map
+  padding: $spacings-300; // Direct spacing variable
+  font-family: @include tp-font("l"); // Font variant (includes weight)
 }
 ```
 
@@ -548,6 +547,86 @@ $ yarn dev
 
 ---
 
+### ⚠️ Important: Prefer Utility Classes Over Custom CSS
+
+**The token system is designed to eliminate the need for custom CSS.** Before writing component styles, ask yourself: "Can I achieve this with utility classes?"
+
+#### ❌ Anti-Pattern: Excessive Custom CSS
+
+```scss
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: none;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.modal--open {
+  display: flex;
+}
+```
+
+**Problems**:
+
+- 8+ lines of CSS for common styling patterns
+- Hard-coded values that duplicate token definitions
+- Harder to maintain consistency across the app
+- Increases CSS bundle size
+
+#### ✅ Better Approach: Leverage Utility Classes
+
+```tsx
+<div className="modal fixed hidden w-100 h-100 c-bg--shadow">
+  {/* content */}
+</div>
+```
+
+**Benefits**:
+
+- Generated directly from your tokens (no duplication)
+- Consistent with design system
+- Smaller CSS footprint
+- Self-documenting class names
+- Easier theme changes (update token → all utilities update)
+
+#### When to Write Custom CSS
+
+Write component SCSS **only when**:
+
+1. **Complex layouts** requiring computed styles or nesting logic
+   - Example: Sophisticated header nav with multiple breakpoints
+
+2. **Animations/transitions** requiring specific timing or easing
+   - Example: Custom entrance animations for modals
+
+3. **Interactive states** not covered by utility classes
+   - Example: Hover effects combining multiple property changes
+
+4. **Responsive adjustments** that can't be expressed with utilities
+   - Example: Grid layouts that change columns at breakpoints
+
+#### Example: When CSS Makes Sense
+
+```scss
+// ✅ Custom CSS justified here (complex responsive layout)
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: $spacings-300;
+
+  @media (max-width: map.get($breakpoints, "md")) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+```
+
+**Rule**: If you can express it with utility classes, do so. Custom CSS is for layout, animation, and computed properties only.
+
+---
+
 ---
 
 ## Marker System ⭐ Beginner
@@ -583,19 +662,19 @@ All markers use simple comment syntax that Sass ignores:
 .header {
   display: flex;
   align-items: center;
-  padding: map.get($spacings, "300");
+  padding: $spacings-300;
   background: $bg-primary;
 }
 
 .header__logo {
-  font-size: map.get($typography, "xl");
-  font-weight: map.get($typography, "l");
+  font-size: $tp-size-xl;
+  font-family: @include tp-font("l");
   color: $txt-inverse;
 }
 
 .header__nav {
   display: flex;
-  gap: map.get($spacings, "200");
+  gap: $spacings-200;
   margin-left: auto;
 }
 ```
@@ -625,7 +704,7 @@ All markers use simple comment syntax that Sass ignores:
 
 .modal__content {
   background: white;
-  padding: map.get($spacings, "400");
+  padding: $spacings-400;
   border-radius: 4px;
 }
 ```
@@ -646,20 +725,20 @@ All markers use simple comment syntax that Sass ignores:
   position: absolute;
   background: $bg-dark;
   color: $txt-inverse;
-  padding: map.get($spacings, "100") map.get($spacings, "200");
+  padding: $spacings-100 $spacings-200;
   border-radius: 4px;
-  font-size: map.get($typography, "sm");
+  font-size: $tp-size-sm;
   z-index: 1000;
 }
 
 .tooltip--top {
   bottom: 100%;
-  margin-bottom: map.get($spacings, "100");
+  margin-bottom: $spacings-100;
 }
 
 .tooltip--bottom {
   top: 100%;
-  margin-top: map.get($spacings, "100");
+  margin-top: $spacings-100;
 }
 ```
 
@@ -698,7 +777,7 @@ Question: Is this component visible above the fold?
 ```
 ✅ app/components/layout/header/header.scss /* @critical */
 ✅ app/components/hero/hero.scss /* @critical */
-✅ app/components/search-bar/search-bar.scss /* @critical */
+✅ app/components/button/button.scss /* @critical */
 ✅ app/components/breadcrumb/breadcrumb.scss /* @critical */
 ```
 
