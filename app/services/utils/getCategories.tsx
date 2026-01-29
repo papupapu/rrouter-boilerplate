@@ -17,11 +17,8 @@ export interface Category {
 
 export async function getCategories(): Promise<FetchResponse<Category[]>> {
   try {
-    const response = await fetch(
-      "https://dummyjson.com/products/categoriessss"
-    );
+    const response = await fetch("https://dummyjson.com/products/categories");
     const categories = await response.json();
-    console.log(categories);
 
     // Validate response structure
     if (!isValidCategoryArray(categories)) {
