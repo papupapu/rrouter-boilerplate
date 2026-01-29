@@ -12,6 +12,8 @@ export enum ErrorType {
   NETWORK_ERROR = "NETWORK_ERROR",
   /** Invalid JSON, malformed response */
   PARSE_ERROR = "PARSE_ERROR",
+  /** Response is valid JSON but doesn't match expected data structure */
+  VALIDATION_ERROR = "VALIDATION_ERROR",
   /** Unexpected exception, unclassifiable */
   UNKNOWN_ERROR = "UNKNOWN_ERROR",
 }
@@ -36,6 +38,8 @@ export enum ErrorCode {
   TOP_PRODUCTS_FETCH_FAILED = "TOP_PRODUCTS_FETCH_FAILED",
   /** Individual category products failed */
   PRODUCTS_FETCH_FAILED = "PRODUCTS_FETCH_FAILED",
+  /** Response structure validation failed (received data doesn't match expected shape) */
+  INVALID_RESPONSE_STRUCTURE = "INVALID_RESPONSE_STRUCTURE",
   /** Fallback for unclassified errors */
   UNKNOWN_ERROR = "UNKNOWN_ERROR",
 }

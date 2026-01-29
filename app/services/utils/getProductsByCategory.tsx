@@ -1,11 +1,12 @@
 import type { FetchResponse } from "~/utils/errorTypes";
-import { ErrorCode } from "~/utils/errorTypes";
+import { ErrorCode, ErrorType } from "~/utils/errorTypes";
 import { logError } from "~/utils/logger";
 import {
   detectErrorType,
   determineSeverity,
   generateMessage,
   isRetriable,
+  isValidProductArray,
 } from "~/utils/errorDetector";
 
 export interface Product {
@@ -26,6 +27,42 @@ export async function getProductsByCategory(
     );
     const data = await response.json();
     const products = data.products || [];
+
+    // Validate response structure
+    if (!isValidProductArray(products)) {
+      const operation = "getProductsByCategory";
+      const errorType = ErrorType.VALIDATION_ERROR;
+      const severity = determineSeverity(operation);
+      const message = generateMessage(errorType, operation, { category: slug });
+
+      const { timestamp } = logError(
+        ErrorCode.INVALID_RESPONSE_STRUCTURE,
+        errorType,
+        severity,
+        message,
+        false,
+        {
+          operation,
+          dataSource: "dummyjson",
+          category: slug,
+        }
+      );
+
+      return {
+        status: "error",
+        data: null,
+        errors: [
+          {
+            code: ErrorCode.INVALID_RESPONSE_STRUCTURE,
+            type: errorType,
+            severity,
+            message,
+            timestamp,
+            retriable: false,
+          },
+        ],
+      };
+    }
 
     return {
       status: "success",

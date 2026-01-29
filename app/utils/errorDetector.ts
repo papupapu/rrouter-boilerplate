@@ -67,6 +67,52 @@ export function isRetriable(type: ErrorType): boolean {
 }
 
 /**
+ * Validate that response data is an array of objects with required Category fields
+ * @param data The parsed response data
+ * @returns true if data is a valid array of Category objects
+ */
+export function isValidCategoryArray(data: unknown): data is Array<{
+  slug: string;
+  name: string;
+  url: string;
+}> {
+  if (!Array.isArray(data)) {
+    return false;
+  }
+
+  return data.every(
+    (item) =>
+      typeof item === "object" &&
+      item !== null &&
+      typeof (item as Record<string, unknown>).slug === "string" &&
+      typeof (item as Record<string, unknown>).name === "string" &&
+      typeof (item as Record<string, unknown>).url === "string"
+  );
+}
+
+/**
+ * Validate that response data is an array of objects with required Product fields
+ * @param data The parsed response data
+ * @returns true if data is a valid array of Product objects
+ */
+export function isValidProductArray(data: unknown): data is Array<{
+  id: number;
+  title: string;
+}> {
+  if (!Array.isArray(data)) {
+    return false;
+  }
+
+  return data.every(
+    (item) =>
+      typeof item === "object" &&
+      item !== null &&
+      typeof (item as Record<string, unknown>).id === "number" &&
+      typeof (item as Record<string, unknown>).title === "string"
+  );
+}
+
+/**
  * Generate a user-friendly error message
  * @param type The error type
  * @param operation The operation that failed
@@ -86,6 +132,9 @@ export function generateMessage(
 
     case ErrorType.PARSE_ERROR:
       return `Failed to process ${operationName} data. The server response was invalid.`;
+
+    case ErrorType.VALIDATION_ERROR:
+      return `Received invalid ${operationName} data structure. Please try again.`;
 
     case ErrorType.UNKNOWN_ERROR:
       return `An unexpected error occurred while fetching ${operationName}.`;

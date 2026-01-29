@@ -29,7 +29,8 @@ async function fetchProductsForCategories({
   const products: Record<string, Product[]> = {};
   const errors: FetchError[] = [];
 
-  for (const slug of categories.filter(Boolean)) {
+  for (const category of categories.filter(Boolean)) {
+    const { slug } = category;
     const result = await getProductsByCategory(slug);
 
     if (result.status === "success") {
@@ -85,6 +86,7 @@ export async function fetchHomeData(): Promise<FetchResponse<HomeData>> {
 
   // Step 2: Fetch top 3 category products
   const [first, second, third, ...others] = categories;
+
   const { products: topCategoriesProducts, errors: topProductsErrors } =
     await fetchProductsForCategories({
       categories: [first, second, third],

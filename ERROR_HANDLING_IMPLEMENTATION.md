@@ -91,8 +91,11 @@ Classifies the nature of the failure:
 ```typescript
 "NETWORK_ERROR"; // Connection failed, fetch blocked, timeout
 "PARSE_ERROR"; // Invalid JSON, malformed response
+"VALIDATION_ERROR"; // Valid JSON but doesn't match expected data structure
 "UNKNOWN_ERROR"; // Unexpected exception, unclassifiable
 ```
+
+**Note on VALIDATION_ERROR**: This catches cases where the API returns valid JSON but with an unexpected shape. For example, a bad URL like `https://dummyjson.com/products/categoriessss` might return `{message: "..."}` instead of an array of categories. This error type ensures we catch these semantic validation failures without confusing them with parse errors (which indicate malformed JSON). Future enhancements should consider using **Zod** or **TypeScript type guards** for more robust schema validation across the codebase.
 
 ### ErrorSeverity Enum
 
@@ -111,6 +114,7 @@ Operation-level identifiers:
 "CATEGORIES_FETCH_FAILED"; // getCategories failed entirely
 "TOP_PRODUCTS_FETCH_FAILED"; // Top 3 category products failed
 "PRODUCTS_FETCH_FAILED"; // Individual category products failed
+"INVALID_RESPONSE_STRUCTURE"; // Response validation failed (CRITICAL severity)
 "UNKNOWN_ERROR"; // Fallback for unclassified errors
 ```
 
@@ -210,10 +214,12 @@ Type-safe success/error distinction:
 **Files Created**:
 
 1. **app/utils/errorTypes.ts** ✅
-   - ErrorType enum (NETWORK_ERROR, PARSE_ERROR, UNKNOWN_ERROR)
+   - ErrorType enum (NETWORK_ERROR, PARSE_ERROR, VALIDATION_ERROR, UNKNOWN_ERROR)
    - ErrorSeverity enum (CRITICAL, WARNING)
-   - ErrorCode enum (CATEGORIES_FETCH_FAILED, TOP_PRODUCTS_FETCH_FAILED, PRODUCTS_FETCH_FAILED, UNKNOWN_ERROR)
+   - ErrorCode enum (CATEGORIES_FETCH_FAILED, TOP_PRODUCTS_FETCH_FAILED, PRODUCTS_FETCH_FAILED, INVALID_RESPONSE_STRUCTURE, UNKNOWN_ERROR)
    - FetchError interface with code, type, severity, message, timestamp, retriable
+   - ErrorContext interface with operation, dataSource, category
+   - FetchResponse<T> discriminated union type
    - ErrorContext interface with operation, dataSource, category
    - FetchResponse<T> discriminated union type
 
@@ -226,7 +232,9 @@ Type-safe success/error distinction:
    - `detectErrorType()` - Classifies TypeError → network, SyntaxError → parse
    - `determineSeverity()` - Categories → CRITICAL, products → WARNING
    - `isRetriable()` - Returns true for NETWORK_ERROR only
-   - `generateMessage()` - Generates user-friendly messages per error type
+   - `generateMessage()` - Generates user-friendly messages per error type (including VALIDATION_ERROR)
+   - `isValidCategoryArray()` - Type guard validating response is array of Category objects ✅ NEW
+   - `isValidProductArray()` - Type guard validating response is array of Product objects ✅ NEW
 
 ### ✅ Phase 2: Service Layer Refactoring (COMPLETE)
 
@@ -234,6 +242,8 @@ Type-safe success/error distinction:
 
 1. **app/services/utils/getCategories.tsx** ✅
    - Imports error utilities (errorDetector, logger, errorTypes)
+   - Added response validation using `isValidCategoryArray()` type guard ✅ NEW
+   - Returns `INVALID_RESPONSE_STRUCTURE` error if validation fails ✅ NEW
    - Refactored try/catch to use error detector
    - Returns FetchResponse<Category[]> discriminated union
    - Calls logger with operation context (operation: "getCategories", dataSource: "dummyjson")
@@ -241,6 +251,8 @@ Type-safe success/error distinction:
 
 2. **app/services/utils/getProductsByCategory.tsx** ✅
    - Imports error utilities
+   - Added response validation using `isValidProductArray()` type guard ✅ NEW
+   - Returns `INVALID_RESPONSE_STRUCTURE` error if validation fails ✅ NEW
    - Refactored try/catch to use error detector
    - Returns FetchResponse<Product[]> discriminated union
    - Calls logger with category context (includes category slug)
@@ -506,12 +518,23 @@ retriable: false
 
 ## Future Enhancements
 
-1. **Retry Logic** - Automatic retry for network errors with exponential backoff
-2. **External Error Tracking** - Integration with Sentry/DataDog for production monitoring
-3. **Error Metrics** - Track error rates, types, and sources
-4. **Error Boundaries** - React error boundary integration for graceful UI error handling
-5. **Error Recovery UI** - Display error states and recovery options to users
-6. **Localization** - i18n support for error messages in different languages
+1. **Advanced Response Validation with Zod** - Current validation uses simple runtime type guards. Consider migrating to **Zod** for comprehensive schema validation across all API responses:
+   - Validate response structures at runtime with detailed error messages
+   - Generate TypeScript types from schemas for type safety
+   - Provide better documentation of expected API shapes
+   - Enable easier schema changes and API contract enforcement
+
+2. **Retry Logic** - Automatic retry for network errors with exponential backoff
+
+3. **External Error Tracking** - Integration with Sentry/DataDog for production monitoring
+
+4. **Error Metrics** - Track error rates, types, and sources
+
+5. **Error Boundaries** - React error boundary integration for graceful UI error handling
+
+6. **Error Recovery UI** - Display error states and recovery options to users
+
+7. **Localization** - i18n support for error messages in different languages
 
 ---
 
