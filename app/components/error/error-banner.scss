@@ -1,0 +1,76 @@
+/**
+ * error-banner.scss
+ *
+ * Styling for ErrorBanner component - compact top-of-page error notification.
+ */
+
+@use "~/app/styles/abstracts/colors" as *;
+@use "~/app/styles/abstracts/spacings" as *;
+@use "~/app/styles/abstracts/typography" as *;
+@use "~/app/styles/abstracts/flex" as *;
+@use "~/app/styles/abstracts/dimensions" as *;
+
+.error-banner {
+  background-color: $bg-warning;
+  border-bottom: 2px solid $txt-warning;
+  padding: $sp-300;
+
+  @include flex--row;
+  @include flex--center;
+  gap: $sp-300;
+  justify-content: space-between;
+}
+
+.error-banner__content {
+  @include flex--row;
+  @include flex--center;
+  gap: $sp-300;
+  flex: 1;
+  min-width: 0;
+}
+
+.error-banner__icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.error-banner__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.error-banner__message {
+  @include tp-body--sm;
+  color: $txt-warning;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.error-banner__additional {
+  font-weight: 500;
+  color: darken($txt-warning, 15%);
+}
+
+.error-banner__close-button {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: $txt-warning;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  @include flex--center;
+  border-radius: $bd-xs;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba($txt-warning, 0.15);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $txt-warning;
+    outline-offset: 2px;
+  }
+}

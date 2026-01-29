@@ -1,0 +1,114 @@
+/**
+ * error-page.scss
+ * @critical
+ *
+ * Styling for ErrorPage component - critical error display.
+ * Marked as critical so it extracts to critical CSS bundle.
+ */
+
+@use "~/app/styles/abstracts/colors" as *;
+@use "~/app/styles/abstracts/spacings" as *;
+@use "~/app/styles/abstracts/typography" as *;
+@use "~/app/styles/abstracts/flex" as *;
+@use "~/app/styles/abstracts/sizes" as *;
+@use "~/app/styles/abstracts/dimensions" as *;
+
+.error-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: $bg-error;
+  padding: $sp-300;
+}
+
+.error-page__container {
+  @include flex--column;
+  @include flex--center;
+  max-width: 600px;
+  background-color: $bg-white;
+  border-radius: $bd-sm;
+  padding: $sp-600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.error-page__icon {
+  font-size: 4rem;
+  margin-bottom: $sp-400;
+  display: block;
+}
+
+.error-page__title {
+  @include tp-heading--sm;
+  color: $txt-error-dark;
+  margin-bottom: $sp-200;
+}
+
+.error-page__message {
+  @include tp-body--md;
+  color: $txt-error;
+  margin-bottom: $sp-400;
+  line-height: 1.6;
+}
+
+.error-page__details {
+  background-color: $bg-error;
+  border-left: 4px solid $txt-error;
+  padding: $sp-300;
+  margin-bottom: $sp-400;
+  text-align: left;
+  border-radius: $bd-xs;
+
+  dl {
+    margin: 0;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: $sp-200 $sp-300;
+
+    dt {
+      @include tp-label;
+      color: $txt-error-dark;
+      font-weight: 500;
+    }
+
+    dd {
+      @include tp-body--sm;
+      color: $txt-error;
+      margin: 0;
+      word-break: break-word;
+    }
+  }
+}
+
+.error-page__retry-button {
+  @include flex--center;
+  padding: $sp-300 $sp-500;
+  background-color: $txt-error;
+  color: $bg-white;
+  border: none;
+  border-radius: $bd-xs;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: $txt-error-dark;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $txt-error;
+    outline-offset: 2px;
+  }
+}
+
+.error-page__non-retriable {
+  @include tp-body--sm;
+  color: $txt-info;
+  font-style: italic;
+  margin: 0;
+}

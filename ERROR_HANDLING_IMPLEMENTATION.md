@@ -2,7 +2,7 @@
 
 > Precise, elegant error handling system for data-fetching utilities with granular error classification, severity-ordered aggregation, and rich error context.
 
-**Status**: Phase 2 & Route Typing Complete ✅  
+**Status**: Phase 3 In Progress 🚀  
 **Branch**: `dummyjson-error-handling`  
 **Last Updated**: 29 Gennaio 2026  
 **Commits**:
@@ -38,12 +38,24 @@
    - `getProductsByCategory.tsx` - Products fetch with WARNING severity
    - `home.tsx` - Orchestration with error aggregation and severity sorting
 
+5. **UI Error Rendering** - Per-route error handling with reusable components
+   - `ErrorPage.tsx` - Full-page error for CRITICAL failures (marked `/* @critical */`)
+   - `ErrorAlert.tsx` - Multi-error list for WARNING failures with inline retry buttons
+   - `ErrorBanner.tsx` - Dismissible warning banner for non-blocking errors
+   - Error component SCSS using design tokens (`$bg-error`, `$txt-error`, `$bg-warning`)
+   - Route components passing `loaderData` to views
+   - View components inspecting `FetchResponse` status and rendering accordingly
+   - Inline retry handlers using window.location.reload() for retriable errors
+   - Error helper utilities for clean, testable error inspection logic
+
 ### What's NOT Included
 
-- UI error handling/rendering (deferred)
-- Error recovery/retry logic (future enhancement)
+- Global error context/state management (future enhancement)
+- Error recovery/retry with exponential backoff (future enhancement)
 - i18n/localization for error messages (plain English)
 - External error tracking service integration (foundation provided)
+- Toast/notification system for errors (future enhancement)
+- Error metrics and monitoring (future enhancement)
 
 ---
 
@@ -244,15 +256,75 @@ Type-safe success/error distinction:
    - Status logic: "error" if any errors exist, "success" otherwise
    - Exports HomeData interface for type safety
 
-### Phase 3: Testing & Verification (PENDING)
+### Phase 3: UI Error Handling & Rendering (IN PROGRESS)
+
+**Files Created**:
+
+1. **app/components/error/ErrorPage.tsx** (IN PROGRESS)
+   - Full-page error component for CRITICAL failures
+   - Displays primary error message + timestamp
+   - Shows retry button for retriable errors only
+   - Marked with `/* @critical */` for critical CSS extraction
+   - Accepts `error: FetchError` + optional `onRetry: () => void`
+
+2. **app/components/error/ErrorAlert.tsx** (IN PROGRESS)
+   - Multi-error list component for WARNING severity errors
+   - Renders list of errors with code, type, and message
+   - Inline retry buttons for each retriable error
+   - Dismissible alert container
+   - Accepts `errors: FetchError[]` + optional `onRetry: (error: FetchError) => void`
+
+3. **app/components/error/ErrorBanner.tsx** (IN PROGRESS)
+   - Dismissible warning banner for top-of-page error notifications
+   - Used for non-blocking, non-critical errors
+   - Accepts `errors: FetchError[]` + `onDismiss: () => void`
+
+4. **app/components/error/** - SCSS files (IN PROGRESS)
+   - `error-page.scss` - Critical error page styling
+   - `error-alert.scss` - Warning alert styling
+   - `error-banner.scss` - Banner styling
+   - Uses design tokens: `$bg-error`, `$txt-error`, `$bg-warning`, `$txt-warning`, `$txt-error-dark`
+
+5. **app/utils/errorHelpers.ts** (IN PROGRESS)
+   - `hasCriticalError(errors: FetchError[]): boolean` - Check if any CRITICAL error exists
+   - `getRetriableErrors(errors: FetchError[]): FetchError[]` - Filter retriable errors
+   - `extractErrorsByCode(errors: FetchError[], code: ErrorCode): FetchError[]` - Find errors by code
+   - `getCriticalError(errors: FetchError[]): FetchError | undefined` - Get first CRITICAL error
+
+**Files Updated**:
+
+1. **app/routes/home.tsx** (IN PROGRESS)
+   - Destructure `loaderData` from `Route.ComponentProps`
+   - Pass `data={loaderData}` to `<Home>` component
+
+2. **app/routes/post.tsx** (IN PROGRESS)
+   - Similar update to pass `loaderData` to post view
+
+3. **app/views/home/home.tsx** (IN PROGRESS)
+   - Accept `data: FetchResponse<HomeData>` prop
+   - Inspect `data.status` and `data.errors`
+   - Render `ErrorPage` if CRITICAL error + `data.data === null`
+   - Render `ErrorAlert` + partial data if WARNING errors + `data.data !== null`
+   - Render normal content for `status: "success"`
+   - Wire `onRetry` handlers to `ErrorAlert` (window.location.reload())
+
+4. **app/views/post/post.tsx** (IN PROGRESS)
+   - Similar error handling pattern to home view
+
+### Phase 4: Testing & Verification (PENDING)
 
 **Tasks**:
 
 - [ ] Manual testing in dev mode (dev server running)
-- [ ] Browser testing: verify error messages in console
-- [ ] Network simulation: test network error detection
+- [ ] Browser testing: verify error UI renders correctly
+- [ ] Test CRITICAL error path (categories fail → ErrorPage shown)
+- [ ] Test WARNING error path (products fail → ErrorAlert shown + partial data)
+- [ ] Test retry buttons trigger page reload
+- [ ] Network simulation: trigger network error detection via DevTools
 - [ ] Invalid response test: verify parse error detection
 - [ ] Partial success test: verify one product category failure doesn't block others
+- [ ] Verify ErrorPage marked `/* @critical */` extracted to critical CSS
+- [ ] Verify error components integrate with layout without breaking layout
 
 ---
 
@@ -301,17 +373,58 @@ Type-safe success/error distinction:
   - [x] Return aggregated response with errors array
   - [x] Implement status logic: "error" if any errors
 
-### Phase 3: Testing & Verification
+### Phase 3: UI Error Handling & Rendering
 
-- [ ] TypeScript compilation check (✅ all passing)
-- [ ] Manual testing: verify error detection works correctly
+- [ ] Create `app/components/error/ErrorPage.tsx`
+  - [ ] Component structure with error display
+  - [ ] Mark with `/* @critical */`
+  - [ ] Retry button for retriable errors
+
+- [ ] Create `app/components/error/ErrorAlert.tsx`
+  - [ ] Multi-error list rendering
+  - [ ] Inline retry buttons per error
+  - [ ] Dismissible container
+
+- [ ] Create `app/components/error/ErrorBanner.tsx`
+  - [ ] Banner component structure
+  - [ ] Dismissible functionality
+
+- [ ] Create SCSS files for error components
+  - [ ] `error-page.scss` with `/* @critical */`
+  - [ ] `error-alert.scss`
+  - [ ] `error-banner.scss`
+  - [ ] Use design tokens for colors
+
+- [ ] Create `app/utils/errorHelpers.ts`
+  - [ ] Implement helper functions for error inspection
+
+- [ ] Update `app/routes/home.tsx`
+  - [ ] Pass loaderData to Home view
+
+- [ ] Update `app/routes/post.tsx`
+  - [ ] Pass loaderData to Post view
+
+- [ ] Update `app/views/home/home.tsx`
+  - [ ] Accept FetchResponse data prop
+  - [ ] Handle CRITICAL error path
+  - [ ] Handle WARNING error path
+  - [ ] Wire retry handlers
+
+- [ ] Update `app/views/post/post.tsx`
+  - [ ] Similar error handling to home view
+
+### Phase 4: Testing & Verification
+
+- [ ] TypeScript compilation check
+- [ ] Manual testing: verify error UI renders correctly
   - [ ] Test network error detection
   - [ ] Test parse error detection
   - [ ] Test severity sorting in aggregation
   - [ ] Test partial success (some products fail, others succeed)
-- [ ] Review logger output in dev mode
+- [ ] Browser testing: verify error messages and retry buttons
 - [ ] Verify discriminated union types work in IDE
 - [ ] Test in browser: load home page and verify error handling with network inspector
+- [ ] Verify critical CSS extraction includes ErrorPage styles
 
 ---
 

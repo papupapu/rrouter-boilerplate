@@ -17,5 +17,5 @@ export async function loader({ params }: Route.LoaderArgs) {
 }
 
 export default function PostRoute({ loaderData }: Route.ComponentProps) {
-  return <Post name={loaderData.name} />;
+  return <Post data={loaderData} />;
 }

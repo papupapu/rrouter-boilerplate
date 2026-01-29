@@ -1,0 +1,152 @@
+/**
+ * error-alert.scss
+ *
+ * Styling for ErrorAlert component - warning error list display.
+ */
+
+@use "~/app/styles/abstracts/colors" as *;
+@use "~/app/styles/abstracts/spacings" as *;
+@use "~/app/styles/abstracts/typography" as *;
+@use "~/app/styles/abstracts/flex" as *;
+@use "~/app/styles/abstracts/dimensions" as *;
+
+.error-alert {
+  background-color: $bg-warning;
+  border-left: 4px solid $txt-warning;
+  border-radius: $bd-xs;
+  padding: $sp-400;
+  margin-bottom: $sp-400;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.error-alert__header {
+  @include flex--row;
+  @include flex--center;
+  gap: $sp-300;
+  margin-bottom: $sp-300;
+  position: relative;
+}
+
+.error-alert__icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.error-alert__title {
+  @include tp-label;
+  color: $txt-warning;
+  margin: 0;
+  flex: 1;
+  font-weight: 600;
+}
+
+.error-alert__close-button {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: $txt-warning;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  @include flex--center;
+  border-radius: $bd-xs;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba($txt-warning, 0.1);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $txt-warning;
+    outline-offset: 2px;
+  }
+}
+
+.error-alert__content {
+  padding: 0;
+}
+
+.error-alert__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: $sp-300;
+}
+
+.error-alert__item {
+  background-color: rgba($bg-white, 0.6);
+  border-radius: $bd-xs;
+  padding: $sp-300;
+  display: grid;
+  gap: $sp-200;
+}
+
+.error-alert__error-message {
+  @include tp-body--sm;
+  color: $txt-warning;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.error-alert__error-details {
+  @include flex--row;
+  @include flex--center;
+  gap: $sp-200;
+  flex-wrap: wrap;
+}
+
+.error-alert__code {
+  @include tp-label;
+  background-color: rgba($txt-warning, 0.15);
+  color: $txt-warning;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.error-alert__type {
+  @include tp-label;
+  color: $txt-info;
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
+.error-alert__retry-button {
+  @include flex--center;
+  padding: 6px 16px;
+  background-color: $txt-warning;
+  color: $bg-white;
+  border: none;
+  border-radius: 3px;
+  @include tp-label;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 0.875rem;
+
+  &:hover {
+    background-color: darken($txt-warning, 10%);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $txt-warning;
+    outline-offset: 2px;
+  }
+}
+
+.error-alert__non-retriable-badge {
+  @include tp-label;
+  background-color: rgba($txt-info, 0.15);
+  color: $txt-info;
+  padding: 4px 12px;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  width: fit-content;
+}

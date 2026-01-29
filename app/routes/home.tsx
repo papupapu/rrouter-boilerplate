@@ -19,6 +19,5 @@ export async function loader(): Promise<FetchResponse<HomeData>> {
 }
 
 export default function HomeRoute({ loaderData }: Route.ComponentProps) {
-  console.log("Loader Data:", loaderData);
-  return <Home />;
+  return <Home data={loaderData as any} />;
 }
