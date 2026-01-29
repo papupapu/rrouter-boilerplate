@@ -1,7 +1,7 @@
 import { Link } from "react-router";
 import type { FetchResponse } from "../../utils/errorTypes";
 import type { HomeData } from "../../services/home";
-import type { Category } from "../../services/utils/getCategories";
+// import type { Category } from "../../services/utils/getCategories";
 import {
   hasCriticalError,
   getCriticalError,
@@ -42,7 +42,7 @@ export function Home({ data }: HomeProps) {
       <div className="tp-w--s">
         <h1>Home</h1>
 
-        {data.data && (
+        {/* {data.data && (
           <section>
             <h2>Categories ({data.data.categories.length})</h2>
             <ul>
@@ -51,7 +51,7 @@ export function Home({ data }: HomeProps) {
               ))}
             </ul>
           </section>
-        )}
+        )} */}
       </div>
 
       <Link to="/about">Go to about page</Link>

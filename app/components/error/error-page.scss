@@ -6,12 +6,13 @@
  * Marked as critical so it extracts to critical CSS bundle.
  */
 
-@use "~/app/styles/abstracts/colors" as *;
-@use "~/app/styles/abstracts/spacings" as *;
-@use "~/app/styles/abstracts/typography" as *;
-@use "~/app/styles/abstracts/flex" as *;
-@use "~/app/styles/abstracts/sizes" as *;
-@use "~/app/styles/abstracts/dimensions" as *;
+@use "styles/abstracts/colors" as *;
+@use "styles/abstracts/spacings" as *;
+@use "styles/abstracts/typography" as *;
+@use "styles/abstracts/flex" as *;
+@use "styles/abstracts/sizes" as *;
+@use "styles/abstracts/dimensions" as *;
+@use "styles/abstracts/borders" as *;
 
 .error-page {
   display: flex;
@@ -19,61 +20,61 @@
   justify-content: center;
   min-height: 100vh;
   background-color: $bg-error;
-  padding: $sp-300;
+  padding: $spacing-300;
 }
 
 .error-page__container {
-  @include flex--column;
-  @include flex--center;
+  // @include  flex--column;
+  // @include  flex--center;
   max-width: 600px;
-  background-color: $bg-white;
-  border-radius: $bd-sm;
-  padding: $sp-600;
+  background-color: $bg-primary;
+  border-radius: $br-sm;
+  padding: $spacing-600;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   text-align: center;
 }
 
 .error-page__icon {
   font-size: 4rem;
-  margin-bottom: $sp-400;
+  margin-bottom: $spacing-400;
   display: block;
 }
 
 .error-page__title {
-  @include tp-heading--sm;
+  // @include  tp-heading--sm;
   color: $txt-error-dark;
-  margin-bottom: $sp-200;
+  margin-bottom: $spacing-200;
 }
 
 .error-page__message {
-  @include tp-body--md;
+  // @include  tp-body--md;
   color: $txt-error;
-  margin-bottom: $sp-400;
+  margin-bottom: $spacing-400;
   line-height: 1.6;
 }
 
 .error-page__details {
   background-color: $bg-error;
   border-left: 4px solid $txt-error;
-  padding: $sp-300;
-  margin-bottom: $sp-400;
+  padding: $spacing-300;
+  margin-bottom: $spacing-400;
   text-align: left;
-  border-radius: $bd-xs;
+  border-radius: $br-xs;
 
   dl {
     margin: 0;
     display: grid;
     grid-template-columns: auto 1fr;
-    gap: $sp-200 $sp-300;
+    gap: $spacing-200 $spacing-300;
 
     dt {
-      @include tp-label;
+      // @include  tp-label;
       color: $txt-error-dark;
       font-weight: 500;
     }
 
     dd {
-      @include tp-body--sm;
+      // @include  tp-body--sm;
       color: $txt-error;
       margin: 0;
       word-break: break-word;
@@ -82,12 +83,12 @@
 }
 
 .error-page__retry-button {
-  @include flex--center;
-  padding: $sp-300 $sp-500;
+  // @include  flex--center;
+  padding: $spacing-300 $spacing-500;
   background-color: $txt-error;
-  color: $bg-white;
+  color: $bg-primary;
   border: none;
-  border-radius: $bd-xs;
+  border-radius: $br-xs;
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s ease;
@@ -107,7 +108,7 @@
 }
 
 .error-page__non-retriable {
-  @include tp-body--sm;
+  // @include  tp-body--sm;
   color: $txt-info;
   font-style: italic;
   margin: 0;

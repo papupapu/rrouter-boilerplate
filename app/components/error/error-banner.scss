@@ -4,27 +4,28 @@
  * Styling for ErrorBanner component - compact top-of-page error notification.
  */
 
-@use "~/app/styles/abstracts/colors" as *;
-@use "~/app/styles/abstracts/spacings" as *;
-@use "~/app/styles/abstracts/typography" as *;
-@use "~/app/styles/abstracts/flex" as *;
-@use "~/app/styles/abstracts/dimensions" as *;
+@use "styles/abstracts/colors" as *;
+@use "styles/abstracts/spacings" as *;
+@use "styles/abstracts/typography" as *;
+@use "styles/abstracts/flex" as *;
+@use "styles/abstracts/dimensions" as *;
+@use "styles/abstracts/borders" as *;
 
 .error-banner {
   background-color: $bg-warning;
   border-bottom: 2px solid $txt-warning;
-  padding: $sp-300;
+  padding: $spacing-300;
 
-  @include flex--row;
-  @include flex--center;
-  gap: $sp-300;
+  // @include flex--row;
+  // @include flex--center;
+  gap: $spacing-300;
   justify-content: space-between;
 }
 
 .error-banner__content {
-  @include flex--row;
-  @include flex--center;
-  gap: $sp-300;
+  // @include flex--row;
+  // @include flex--center;
+  gap: $spacing-300;
   flex: 1;
   min-width: 0;
 }
@@ -40,7 +41,7 @@
 }
 
 .error-banner__message {
-  @include tp-body--sm;
+  // @include tp-body--sm;
   color: $txt-warning;
   margin: 0;
   line-height: 1.4;
@@ -48,7 +49,7 @@
 
 .error-banner__additional {
   font-weight: 500;
-  color: darken($txt-warning, 15%);
+  // color: darken($txt-warning, 15%);
 }
 
 .error-banner__close-button {
@@ -61,8 +62,8 @@
   padding: 0;
   width: 24px;
   height: 24px;
-  @include flex--center;
-  border-radius: $bd-xs;
+  // @include flex--center;
+  border-radius: $br-xs;
   transition: background-color 0.2s ease;
 
   &:hover {

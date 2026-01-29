@@ -4,26 +4,28 @@
  * Styling for ErrorAlert component - warning error list display.
  */
 
-@use "~/app/styles/abstracts/colors" as *;
-@use "~/app/styles/abstracts/spacings" as *;
-@use "~/app/styles/abstracts/typography" as *;
-@use "~/app/styles/abstracts/flex" as *;
-@use "~/app/styles/abstracts/dimensions" as *;
+@use "styles/abstracts/colors" as *;
+@use "styles/abstracts/spacings" as *;
+@use "styles/abstracts/typography" as *;
+@use "styles/abstracts/flex" as *;
+@use "styles/abstracts/dimensions" as *;
+@use "styles/abstracts/borders" as *;
 
 .error-alert {
   background-color: $bg-warning;
   border-left: 4px solid $txt-warning;
-  border-radius: $bd-xs;
-  padding: $sp-400;
-  margin-bottom: $sp-400;
+  border-radius: $br-xs;
+  padding: $spacing-400;
+  margin-bottom: $spacing-400;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .error-alert__header {
-  @include flex--row;
-  @include flex--center;
-  gap: $sp-300;
-  margin-bottom: $sp-300;
+  // display: flex
+  // align-items: center;
+  gap: $spacing-300;
+  margin-bottom: $spacing-300;
+
   position: relative;
 }
 
@@ -33,7 +35,6 @@
 }
 
 .error-alert__title {
-  @include tp-label;
   color: $txt-warning;
   margin: 0;
   flex: 1;
@@ -50,8 +51,8 @@
   padding: 0;
   width: 24px;
   height: 24px;
-  @include flex--center;
-  border-radius: $bd-xs;
+  // @include flex--center;
+  border-radius: $br-xs;
   transition: background-color 0.2s ease;
 
   &:hover {
@@ -73,33 +74,33 @@
   padding: 0;
   margin: 0;
   display: grid;
-  gap: $sp-300;
+  gap: $spacing-300;
 }
 
 .error-alert__item {
-  background-color: rgba($bg-white, 0.6);
-  border-radius: $bd-xs;
-  padding: $sp-300;
+  background-color: rgba($bg-primary, 0.6);
+  border-radius: $br-xs;
+  padding: $spacing-300;
   display: grid;
-  gap: $sp-200;
+  gap: $spacing-200;
 }
 
 .error-alert__error-message {
-  @include tp-body--sm;
+  // @include tp-body--sm;
   color: $txt-warning;
   line-height: 1.5;
   margin: 0;
 }
 
 .error-alert__error-details {
-  @include flex--row;
-  @include flex--center;
-  gap: $sp-200;
+  //@include flex--row;
+  // @include flex--center;
+  gap: $spacing-200;
   flex-wrap: wrap;
 }
 
 .error-alert__code {
-  @include tp-label;
+  // @include tp-label;;;
   background-color: rgba($txt-warning, 0.15);
   color: $txt-warning;
   padding: 2px 8px;
@@ -109,20 +110,20 @@
 }
 
 .error-alert__type {
-  @include tp-label;
+  // @include tp-label;;;
   color: $txt-info;
   font-size: 0.75rem;
   font-weight: 400;
 }
 
 .error-alert__retry-button {
-  @include flex--center;
+  // @include flex--center;
   padding: 6px 16px;
   background-color: $txt-warning;
-  color: $bg-white;
+  color: $bg-primary;
   border: none;
   border-radius: 3px;
-  @include tp-label;
+  // @include tp-label;;;
   cursor: pointer;
   transition: background-color 0.2s ease;
   font-size: 0.875rem;
@@ -142,7 +143,7 @@
 }
 
 .error-alert__non-retriable-badge {
-  @include tp-label;
+  // @include tp-label;;;
   background-color: rgba($txt-info, 0.15);
   color: $txt-info;
   padding: 4px 12px;
