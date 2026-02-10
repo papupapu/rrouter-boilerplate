@@ -5,9 +5,10 @@ import {
   type ServiceError,
   type PartialDataInfo,
 } from "./types/response";
+import type { Categories } from "./schemas";
 
 export interface HomeData {
-  categories: string[];
+  categories: Categories;
   topCategoriesProducts: Record<string, unknown[]>;
   categoriesProducts: Record<string, unknown[]>;
 }
@@ -20,7 +21,7 @@ async function fetchProductsForCategories({
   categories,
   count,
 }: {
-  categories: string[];
+  categories: Categories;
   count: number;
 }): Promise<{
   products: Record<string, unknown[]>;
@@ -32,19 +33,20 @@ async function fetchProductsForCategories({
   const failedCategories: string[] = [];
 
   for (const category of categories.filter(Boolean)) {
-    const result = await getProductsByCategory(category);
+    const slug = category.slug;
+    const result = await getProductsByCategory(slug);
 
     if (!result.error) {
-      products[category] = result.products.slice(0, count);
+      products[slug] = result.products.slice(0, count);
     } else {
       // Graceful degradation: collect error, continue with next category
       errors.push({
         code: result.errorCode || "UNKNOWN_ERROR",
         message: result.errorMessage || "Unknown error",
         statusCode: result.errorStatusCode ?? undefined,
-        affectedResource: category,
+        affectedResource: slug,
       });
-      failedCategories.push(category);
+      failedCategories.push(slug);
     }
   }
 

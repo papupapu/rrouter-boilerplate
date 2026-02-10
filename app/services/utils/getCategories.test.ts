@@ -1,6 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { getCategories } from "./getCategories";
 
+const makeCategory = (slug: string) => ({
+  slug,
+  name: slug[0].toUpperCase() + slug.slice(1),
+  url: `https://dummyjson.com/products/category/${slug}`,
+});
+
 describe("getCategories() - Fetch and validate product categories from API", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -13,7 +19,12 @@ describe("getCategories() - Fetch and validate product categories from API", () 
 
   describe("✅ Success Cases - Valid responses", () => {
     it("should return categories on successful fetch with valid JSON array", async () => {
-      const mockCategories = ["electronics", "clothing", "books", "home"];
+      const mockCategories = [
+        makeCategory("electronics"),
+        makeCategory("clothing"),
+        makeCategory("books"),
+        makeCategory("home"),
+      ];
 
       global.fetch = vi.fn(() =>
         Promise.resolve({
@@ -165,7 +176,7 @@ describe("getCategories() - Fetch and validate product categories from API", () 
       global.fetch = vi.fn(() =>
         Promise.resolve({
           ok: true,
-          json: async () => ({ categories: ["electronics"] }),
+          json: async () => ({ categories: [makeCategory("electronics")] }),
         } as Response)
       );
 
@@ -181,7 +192,7 @@ describe("getCategories() - Fetch and validate product categories from API", () 
       global.fetch = vi.fn(() =>
         Promise.resolve({
           ok: true,
-          json: async () => ["electronics", 123, null],
+          json: async () => [makeCategory("electronics"), 123, null],
         } as Response)
       );
 
@@ -199,7 +210,16 @@ describe("getCategories() - Fetch and validate product categories from API", () 
       global.fetch = vi.fn(() =>
         Promise.resolve({
           ok: true,
-          json: async () => ["electronics", "", "books"],
+          json: async () => [
+            makeCategory("electronics"),
+            // invalid category: empty slug and name
+            {
+              slug: "",
+              name: "",
+              url: "https://dummyjson.com/products/category/invalid",
+            },
+            makeCategory("books"),
+          ],
         } as Response)
       );
 

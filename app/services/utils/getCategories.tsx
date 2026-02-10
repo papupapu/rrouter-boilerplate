@@ -1,5 +1,8 @@
 import { ErrorFactory, type AppError } from "../types/errors";
-import { safeParseCategories } from "../schemas/categories.schema";
+import {
+  safeParseCategories,
+  type Categories,
+} from "../schemas/categories.schema";
 
 const API_URL = "https://dummyjson.com/products/categories";
 
@@ -8,7 +11,7 @@ export interface GetCategoriesResult {
   errorMessage: string | null;
   errorCode: string | null;
   errorStatusCode: number | null;
-  categories: string[];
+  categories: Categories;
 }
 
 /**

@@ -5,10 +5,14 @@ import { z } from "zod";
  * API returns an array of category names (strings)
  *
  * Example valid response:
- * ["electronics", "clothing", "books", "home", "sports"]
+ * [{ slug: "electronics", name: "Electronics", url: "https://dummyjson.com/products/category/electronics" }, { slug: "clothing", name: "Clothing", url: "https://dummyjson.com/products/category/clothing" }, { slug: "books", name: "Books", url: "https://dummyjson.com/products/category/books" }, { slug: "home", name: "Home", url: "https://dummyjson.com/products/category/home" }, { slug: "sports", name: "Sports", url: "https://dummyjson.com/products/category/sports" }]
  */
 export const CategoriesSchema = z.array(
-  z.string().min(1, "Category name cannot be empty")
+  z.object({
+    slug: z.string().min(1, "Category slug cannot be empty"),
+    name: z.string().min(1, "Category name cannot be empty"),
+    url: z.url(),
+  })
 );
 
 /**

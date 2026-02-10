@@ -3,8 +3,18 @@ import { fetchHomeData } from "./home";
 import * as getCategoriesModule from "./utils/getCategories";
 import * as getProductsModule from "./utils/getProductsByCategory";
 
+const makeCategory = (slug: string) => ({
+  slug,
+  name: slug[0].toUpperCase() + slug.slice(1),
+  url: `https://dummyjson.com/products/category/${slug}`,
+});
+
 describe("fetchHomeData() - Service orchestration with graceful degradation", () => {
-  const mockCategories = ["electronics", "clothing", "books"];
+  const mockCategories = [
+    makeCategory("electronics"),
+    makeCategory("clothing"),
+    makeCategory("books"),
+  ];
   const mockProductsElectronics = [
     { id: 1, title: "iPhone", price: 999, category: "electronics" },
     { id: 2, title: "Laptop", price: 1999, category: "electronics" },
@@ -306,7 +316,11 @@ describe("fetchHomeData() - Service orchestration with graceful degradation", ()
         errorMessage: null,
         errorCode: null,
         errorStatusCode: null,
-        categories: ["cat1", "cat2", "cat3"],
+        categories: [
+          makeCategory("cat1"),
+          makeCategory("cat2"),
+          makeCategory("cat3"),
+        ],
       });
 
       vi.spyOn(getProductsModule, "getProductsByCategory").mockResolvedValue({
@@ -341,7 +355,13 @@ describe("fetchHomeData() - Service orchestration with graceful degradation", ()
         errorMessage: null,
         errorCode: null,
         errorStatusCode: null,
-        categories: ["cat1", "cat2", "cat3", "cat4", "cat5"],
+        categories: [
+          makeCategory("cat1"),
+          makeCategory("cat2"),
+          makeCategory("cat3"),
+          makeCategory("cat4"),
+          makeCategory("cat5"),
+        ],
       });
 
       vi.spyOn(getProductsModule, "getProductsByCategory").mockResolvedValue({
@@ -371,7 +391,7 @@ describe("fetchHomeData() - Service orchestration with graceful degradation", ()
         errorMessage: null,
         errorCode: null,
         errorStatusCode: null,
-        categories: ["electronics"],
+        categories: [makeCategory("electronics")],
       });
 
       vi.spyOn(
@@ -400,7 +420,7 @@ describe("fetchHomeData() - Service orchestration with graceful degradation", ()
         errorMessage: null,
         errorCode: null,
         errorStatusCode: null,
-        categories: ["electronics", "clothing"],
+        categories: [makeCategory("electronics"), makeCategory("clothing")],
       });
 
       vi.spyOn(getProductsModule, "getProductsByCategory")
