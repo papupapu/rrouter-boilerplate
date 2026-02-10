@@ -1,8 +1,8 @@
-import type { Route } from "./+types/layout";
-
 import * as homeServices from "../services/home";
 
 import { Home } from "../views/home/home";
+
+type LoaderData = Awaited<ReturnType<typeof homeServices.fetchHomeData>>;
 
 export function meta() {
   return [
@@ -16,7 +16,18 @@ export async function loader() {
   return product;
 }
 
-export default function HomeRoute({ loaderData }: Route.ComponentProps) {
-  console.log("Loader Data:", loaderData);
-  return <Home data={loaderData} />;
+export default function HomeRoute({ loaderData }: { loaderData: LoaderData }) {
+  if (!loaderData.success || !loaderData.data) {
+    return <div>Failed to load home data.</div>;
+  }
+
+  const { categories, categoriesProducts, topCategoriesProducts } =
+    loaderData.data;
+  return (
+    <Home
+      categories={categories}
+      categoriesProducts={categoriesProducts}
+      topCategoriesProducts={topCategoriesProducts}
+    />
+  );
 }
