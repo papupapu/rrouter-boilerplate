@@ -10,6 +10,10 @@
     "typecheck": "react-router typegen && tsc",
     "lint": "eslint .",
     "format": "prettier --write .",
+    "test": "cross-env VITEST_REPORTER_MODE=minimal vitest",
+    "test:verbose": "cross-env VITEST_REPORTER_MODE=verbose vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "cross-env VITEST_REPORTER_MODE=coverage vitest --coverage",
     "prepare": "husky install"
   },
   "dependencies": {
@@ -20,7 +24,8 @@
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-router": "7.12.0",
-    "use-context-selector": "^2.0.0"
+    "use-context-selector": "^2.0.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@react-router/dev": "7.12.0",
@@ -30,11 +35,14 @@
     "@types/react-dom": "^19.2.3",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
+    "@vitest/ui": "^4.0.18",
     "beasties": "^0.4.1",
+    "cross-env": "7",
     "eslint": "^9.0.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "happy-dom": "^20.6.0",
     "husky": "^9.0.0",
     "lint-staged": "^15.0.0",
     "prettier": "^3.0.0",
@@ -43,7 +51,8 @@
     "typescript": "^5.9.2",
     "vite": "^7.1.7",
     "vite-plugin-beasties": "^0.4.1",
-    "vite-tsconfig-paths": "^5.1.4"
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^4.0.18"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

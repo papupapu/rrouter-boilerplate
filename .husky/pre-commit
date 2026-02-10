@@ -1,1 +1,10 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Run tests first - block commit if tests fail
+echo "🧪 Running tests..."
+yarn test || exit 1
+
+# Run linting and formatting
+echo "📝 Running linting and formatting..."
 npx lint-staged
