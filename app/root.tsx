@@ -5,11 +5,14 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
 } from "react-router";
 
 import type { Route } from "./+types/root";
 
 import { LayoutProvider } from "./context/layout/layout";
+import { CategoriesProvider } from "./context/categories/categories";
+import { getCategories } from "./services/home";
 
 import "./app.scss";
 
@@ -32,6 +35,30 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
+/**
+ * Root Loader - Global Data Fetching
+ *
+ * This loader runs on every page load (SSR) and provides data that should be
+ * available throughout the entire application.
+ *
+ * Currently fetches:
+ * - Categories: Used for global navigation in Header component
+ *
+ * Caching:
+ * The getCategories() function uses an in-memory cache, so when the home route
+ * also calls getCategories(), it won't make a duplicate HTTP request.
+ *
+ * Data Flow:
+ * 1. Root loader fetches categories
+ * 2. App component receives data via useLoaderData()
+ * 3. CategoriesProvider makes data available to all child routes
+ * 4. Components access via useCategoriesState() hook
+ */
+export async function loader() {
+  const categories = await getCategories();
+  return { categories };
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
@@ -50,8 +77,29 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ * App Component - Root Application Wrapper
+ *
+ * This component:
+ * 1. Receives data from the root loader
+ * 2. Wraps all routes with CategoriesProvider to make categories globally available
+ * 3. Renders child routes via <Outlet />
+ *
+ * Important: CategoriesProvider must be in App (not Layout) because:
+ * - App has access to loader data via useLoaderData()
+ * - Layout doesn't automatically receive root loader data
+ * - This ensures categories are available to all routes
+ */
 export default function App() {
-  return <Outlet />;
+  // Get categories from root loader
+  const loaderData = useLoaderData<typeof loader>();
+
+  return (
+    // Provide categories to all child routes via Context
+    <CategoriesProvider categories={loaderData.categories}>
+      <Outlet />
+    </CategoriesProvider>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
