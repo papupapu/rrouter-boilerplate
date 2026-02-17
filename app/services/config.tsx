@@ -39,12 +39,11 @@ export type Category = {
 export type ApiConfig = {
   baseUrls: {
     dummyJson: string;
-    swapi: string;
   };
   endpoints: {
+    product: string;
     categories: string;
     productsByCategory: string;
-    people: string;
   };
   timeouts: {
     default: number;
@@ -119,7 +118,6 @@ export type IntegrationsConfig = {
  */
 export type RemoteSource = {
   enabled: boolean;
-  url: string;
   method: "GET" | "POST";
   priority: "local" | "remote" | "merge";
   timeout: number;

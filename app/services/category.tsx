@@ -5,4 +5,9 @@
  * API endpoint is configured in app/config/api.config.json
  */
 
-// import { getApiConfig } from "./config";
+import { getCategoryProducts } from "./common";
+
+export async function getProductsByCategorySlug(slug: string) {
+  const products = await getCategoryProducts(slug);
+  return products;
+}

@@ -12,10 +12,10 @@ export function meta() {
 }
 
 export async function loader({ params }: Route.LoaderArgs) {
-  const product = await postServices.getDataBySlug(params.slug);
+  const product = await postServices.getProduct({ slug: params.slug });
   return product;
 }
 
 export default function PostRoute({ loaderData }: Route.ComponentProps) {
-  return <Post name={loaderData.name} />;
+  return <Post data={loaderData} />;
 }
