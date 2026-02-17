@@ -5,6 +5,42 @@ import { isbot } from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
 import { jsx } from "react/jsx-runtime";
 import { processCriticalCSS } from "./utils/beasties-processor";
+import { initializeConfig } from "./services/config";
+
+// ============================================================================
+// Server Startup Initialization
+// ============================================================================
+
+/**
+ * Initialize application configuration at server startup
+ *
+ * This initializes all application configurations before handling any requests:
+ * - API endpoints and URLs (from app/config/api.config.json)
+ * - Site metadata and SEO defaults (from app/config/metadata.config.json)
+ * - Third-party integration keys (from app/config/integrations.config.json)
+ * - Remote configurations like categories (from configured APIs)
+ *
+ * Both development and production servers benefit from this optimization:
+ * - Development: All configs loaded once when dev server starts
+ * - Production: All configs loaded once when production server starts
+ *
+ * Performance impact:
+ * - Adds ~200-500ms to server startup time (one-time cost)
+ * - Eliminates runtime fetching from all requests (ongoing benefit)
+ * - Reduces API calls to zero after initialization
+ */
+try {
+  await initializeConfig();
+  console.log("[Server] ✅ Application configuration initialized");
+} catch (error) {
+  console.error("[Server] ❌ Failed to initialize configuration:", error);
+  console.error("[Server] ⚠️  Server starting without cached configuration");
+  // Continue server startup - loaders will handle the error
+}
+
+// ============================================================================
+// Request Handling
+// ============================================================================
 
 const streamTimeout = 5000;
 

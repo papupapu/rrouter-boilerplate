@@ -1,0 +1,20 @@
+{
+  "$schema": "./schemas/remote.schema.json",
+  "description": "Configuration for remote config sources",
+  "sources": {
+    "categories": {
+      "enabled": true,
+      "url": "https://dummyjson.com/products/categories",
+      "method": "GET",
+      "priority": "remote",
+      "timeout": 15000,
+      "fallbackToLocal": true,
+      "transform": null
+    }
+  },
+  "global": {
+    "timeout": 10000,
+    "retryOnFailure": true,
+    "maxRetries": 2
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "./schemas/integrations.schema.json",
+  "description": "Third-party integration keys and URLs",
+  "analytics": {
+    "enabled": false,
+    "googleAnalyticsId": "",
+    "googleTagManagerId": "",
+    "mixpanelToken": ""
+  },
+  "cdn": {
+    "enabled": false,
+    "baseUrl": "",
+    "imageOptimization": true
+  },
+  "social": {
+    "twitter": "",
+    "github": "https://github.com/remix-run/react-router",
+    "linkedin": "",
+    "facebook": ""
+  },
+  "monitoring": {
+    "enabled": false,
+    "sentryDsn": "",
+    "logRocketId": ""
+  }
+}
