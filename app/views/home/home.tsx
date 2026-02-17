@@ -58,9 +58,9 @@ export function Home({ data }: { data: HomeData }) {
                   />
                   {/* Product details */}
                   <h3 className="tp-w--s">
-                    <a href={`/${category.slug}/${product.id}`}>
+                    <Link to={`/${category.slug}/${product.id}`}>
                       {product.title}
-                    </a>
+                    </Link>
                   </h3>
                   <p>${product.price}</p>
                 </div>

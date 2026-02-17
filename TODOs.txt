@@ -2,3 +2,4 @@
 - pagina prodotto: + ultimi 3 prodotti escluso quello corrente
 - organizzazione store:
 - cache di tutto quello che è stato fetchato in modo da evitare fetch successive per i next 15 minuti
+- transitions
