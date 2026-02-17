@@ -1,24 +1,15 @@
 /**
- * Home Services - Categories and Products API
+ * Home Services - Products API
  *
- * This service layer handles:
- * 1. Fetching categories from dummyJSON API with caching
- * 2. Fetching products for individual or multiple categories
- * 3. Managing in-memory cache to prevent duplicate API requests
- *
- * The caching strategy ensures that both root loader and home loader
- * can call getCategories() without making redundant HTTP requests.
+ * This service layer handles fetching products for individual or multiple categories.
+ * Categories are managed separately in app/services/categories.tsx
  */
+
+import type { Category } from "./categories";
 
 // ============================================================================
 // Types
 // ============================================================================
-
-export type Category = {
-  slug: string; // URL-friendly identifier (e.g., "smartphones")
-  name: string; // Display name (e.g., "Smartphones")
-  url: string; // Full API URL for category
-};
 
 export type Product = {
   id: number;
@@ -38,79 +29,6 @@ export type ProductsResponse = {
   skip: number;
   limit: number;
 };
-
-// ============================================================================
-// Cache Configuration
-// ============================================================================
-
-/**
- * Cache TTL (Time To Live) in milliseconds
- * Categories are cached for 60 seconds to avoid redundant API calls
- * within the same request cycle (root + home loaders)
- */
-const CACHE_TTL = 60000; // 60 seconds
-
-/**
- * In-memory cache for categories
- * Prevents duplicate HTTP requests when both root and home loaders
- * call getCategories() during the same page load
- */
-let categoriesCache: {
-  data: Category[] | null;
-  timestamp: number;
-} = {
-  data: null,
-  timestamp: 0,
-};
-
-// ============================================================================
-// Categories API
-// ============================================================================
-
-/**
- * Fetch all product categories from dummyJSON API with caching
- *
- * This function is called by:
- * 1. Root loader (app/root.tsx) - fetches categories for global navigation
- * 2. Home loader (app/routes/home.tsx) - reuses cached categories for product fetching
- *
- * Cache behavior:
- * - First call: Makes HTTP request, stores in cache
- * - Subsequent calls (within 60s): Returns cached data, no HTTP request
- * - After TTL expires: Fetches fresh data, updates cache
- *
- * @returns Promise<Category[]> - Array of product categories
- */
-export async function getCategories(): Promise<Category[]> {
-  const now = Date.now();
-
-  // Return cached data if fresh (within TTL)
-  if (categoriesCache.data && now - categoriesCache.timestamp < CACHE_TTL) {
-    console.log("[Categories] Using cached data");
-    return categoriesCache.data;
-  }
-
-  // Fetch fresh data from API
-  console.log("[Categories] Fetching from API");
-  const response = await fetch("https://dummyjson.com/products/categories");
-  const data = await response.json();
-
-  // Update cache with fresh data
-  categoriesCache.data = data;
-  categoriesCache.timestamp = now;
-
-  return data;
-}
-
-/**
- * Clear the categories cache
- * Useful for testing or manual cache invalidation
- */
-export function clearCategoriesCache(): void {
-  console.log("[Categories] Cache cleared");
-  categoriesCache.data = null;
-  categoriesCache.timestamp = 0;
-}
 
 // ============================================================================
 // Products API

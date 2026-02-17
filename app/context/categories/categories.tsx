@@ -2,8 +2,15 @@
  * Categories Context Provider
  *
  * This context makes the categories list available globally throughout the app.
- * It's populated from the root loader (app/root.tsx) which fetches categories
- * on initial page load.
+ * Categories are initialized once at server startup (app/entry.server.tsx) and
+ * cached indefinitely. The root loader (app/root.tsx) reads from this cache and
+ * provides the data to all child routes via this context.
+ *
+ * Architecture:
+ * 1. Server starts → Categories fetched from API and cached (app/entry.server.tsx)
+ * 2. Root loader → Reads cached categories (app/root.tsx)
+ * 3. CategoriesProvider → Makes data available globally via context
+ * 4. Components → Access via useCategoriesState() hook
  *
  * Usage in components:
  * ```tsx
@@ -23,13 +30,14 @@
  * - Single source of truth for categories across all routes
  * - No prop drilling required
  * - Optimized re-renders using use-context-selector
+ * - Zero runtime API calls (categories fetched only at server startup)
  * - Categories available in Header, navigation, and any component
  */
 
 import { useMemo } from "react";
 import { createContext, useContextSelector } from "use-context-selector";
 
-import type { Category } from "../../services/home";
+import type { Category } from "../../services/categories";
 
 /**
  * Context for storing categories list

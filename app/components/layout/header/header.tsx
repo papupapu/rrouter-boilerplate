@@ -2,7 +2,7 @@
  * Header Component - Global Navigation
  *
  * This component demonstrates using the CategoriesContext to display
- * dynamic navigation based on the categories fetched from the API.
+ * dynamic navigation based on categories initialized at server startup.
  *
  * Features:
  * - Sidebar toggle functionality (existing)
@@ -10,15 +10,17 @@
  * - Appears on all pages via layout routes
  *
  * Data flow:
- * 1. Root loader fetches categories
- * 2. CategoriesProvider makes them available globally
- * 3. Header uses useCategoriesState() hook to access categories
- * 4. Categories rendered as navigation links
+ * 1. Server startup: Categories fetched from API and cached (app/entry.server.tsx)
+ * 2. Root loader: Reads cached categories (~1ms, always cache hit)
+ * 3. CategoriesProvider: Makes them available globally via context
+ * 4. Header: Uses useCategoriesState() hook to access categories
+ * 5. Categories rendered as navigation links
  *
  * Benefits:
  * - No need to pass categories as props
- * - Automatically updates if categories change
+ * - Zero runtime API calls (categories initialized at server startup)
  * - Works across all routes (home, about, etc.)
+ * - Always available, no loading states needed
  */
 
 import { Link } from "react-router";

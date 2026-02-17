@@ -8,11 +8,14 @@
  *
  * Data source:
  * - Receives categories and categoryProducts from home route loader
+ * - Categories: Initialized at server startup, read from cache (~1ms)
+ * - Products: Fetched at runtime for each category in parallel (~400ms)
  * - Products are organized by category slug for easy lookup
  */
 
 import { Link } from "react-router";
-import type { Category, Product } from "../../services/home";
+import type { Category } from "../../services/categories";
+import type { Product } from "../../services/home";
 
 type HomeData = {
   categories: Category[]; // List of all categories

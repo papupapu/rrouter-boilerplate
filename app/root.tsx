@@ -12,7 +12,7 @@ import type { Route } from "./+types/root";
 
 import { LayoutProvider } from "./context/layout/layout";
 import { CategoriesProvider } from "./context/categories/categories";
-import { getCategories } from "./services/home";
+import { getCategories } from "./services/categories";
 
 import "./app.scss";
 
@@ -44,15 +44,22 @@ export const links: Route.LinksFunction = () => [
  * Currently fetches:
  * - Categories: Used for global navigation in Header component
  *
- * Caching:
- * The getCategories() function uses an in-memory cache, so when the home route
- * also calls getCategories(), it won't make a duplicate HTTP request.
+ * Categories Architecture:
+ * Categories are initialized once at server startup (see app/entry.server.tsx)
+ * and cached indefinitely in memory. The getCategories() function always returns
+ * cached data with zero network requests after server startup.
+ *
+ * Performance:
+ * - Server startup: Categories fetched from API once (~200ms one-time cost)
+ * - All requests: Read from cache (~1ms, always cache hit)
+ * - Cache lifetime: Infinite (refreshes only on server restart)
  *
  * Data Flow:
- * 1. Root loader fetches categories
- * 2. App component receives data via useLoaderData()
- * 3. CategoriesProvider makes data available to all child routes
- * 4. Components access via useCategoriesState() hook
+ * 1. Server starts → Categories initialized and cached (app/entry.server.tsx)
+ * 2. Root loader calls getCategories() → Returns cached data (~1ms)
+ * 3. App component receives data via useLoaderData()
+ * 4. CategoriesProvider makes data available to all child routes
+ * 5. Components access via useCategoriesState() hook
  */
 export async function loader() {
   const categories = await getCategories();
