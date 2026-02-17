@@ -1,0 +1,28 @@
+{
+  "$schema": "./schemas/metadata.schema.json",
+  "description": "Site metadata and SEO defaults",
+  "site": {
+    "name": "React Router Boilerplate",
+    "description": "A modern React Router 7 boilerplate with TypeScript, SCSS, and Server-Side Rendering",
+    "url": "http://localhost:5173",
+    "locale": "en_US"
+  },
+  "defaults": {
+    "title": "React Router Boilerplate",
+    "titleTemplate": "%s | React Router Boilerplate",
+    "description": "A modern React Router 7 boilerplate with TypeScript, SCSS, and Server-Side Rendering",
+    "keywords": ["react-router", "typescript", "ssr", "vite", "boilerplate"]
+  },
+  "openGraph": {
+    "type": "website",
+    "siteName": "React Router Boilerplate",
+    "image": "/og-image.png",
+    "imageWidth": 1200,
+    "imageHeight": 630
+  },
+  "twitter": {
+    "card": "summary_large_image",
+    "site": "@reactrouter",
+    "creator": "@reactrouter"
+  }
+}

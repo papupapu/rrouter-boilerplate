@@ -37,7 +37,7 @@
 import { useMemo } from "react";
 import { createContext, useContextSelector } from "use-context-selector";
 
-import type { Category } from "../../services/categories";
+import type { Category } from "~/services/config";
 
 /**
  * Context for storing categories list

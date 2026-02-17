@@ -2,10 +2,12 @@
  * Home Services - Products API
  *
  * This service layer handles fetching products for individual or multiple categories.
- * Categories are managed separately in app/services/categories.tsx
+ * Categories are managed in the unified config system (app/services/config.tsx)
+ * API endpoints are configured in app/config/api.config.json
  */
 
-import type { Category } from "./categories";
+import type { Category } from "./config";
+import { getApiConfig } from "./config";
 
 // ============================================================================
 // Types
@@ -37,6 +39,8 @@ export type ProductsResponse = {
 /**
  * Fetch products for a specific category
  *
+ * API endpoint is configured in app/config/api.config.json
+ *
  * @param categorySlug - The category slug (e.g., "smartphones")
  * @returns Promise<Product[]> - Array of products in this category
  */
@@ -44,9 +48,15 @@ export async function getCategoryProducts(
   categorySlug: string
 ): Promise<Product[]> {
   console.log(`[Products] Fetching products for category: ${categorySlug}`);
-  const response = await fetch(
-    `https://dummyjson.com/products/category/${categorySlug}`
+
+  // Get API endpoint from config
+  const apiConfig = getApiConfig();
+  const url = apiConfig.endpoints.productsByCategory.replace(
+    "{slug}",
+    categorySlug
   );
+
+  const response = await fetch(url);
   const data: ProductsResponse = await response.json();
   return data.products;
 }

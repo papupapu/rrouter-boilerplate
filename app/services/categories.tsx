@@ -1,63 +1,65 @@
 /**
- * Categories Service - Server Startup Initialization
+ * Categories Service - Facade over Configuration System
  *
- * This service manages the categories lifecycle:
- * 1. Initialized once at server startup (app/entry.server.tsx)
- * 2. Cached indefinitely in memory
- * 3. Accessed by route loaders via getCategories()
+ * ⚠️ DEPRECATION NOTICE:
+ * This file now serves as a backward-compatibility facade over the unified
+ * configuration system (app/services/config.tsx). New code should import
+ * directly from the config service.
+ *
+ * Migration path:
+ * - Old: import { getCategories } from "~/services/categories"
+ * - New: import { getCategories } from "~/services/config"
+ *
+ * This facade will be maintained for backward compatibility but may be
+ * removed in a future major version.
+ *
+ * Categories are now part of the unified application configuration:
+ * 1. Initialized at server startup via initializeConfig() (app/entry.server.tsx)
+ * 2. Fetched from remote API (configured in app/config/remote.config.json)
+ * 3. Cached indefinitely in memory with other configs
+ * 4. Accessed by route loaders via getCategories()
  *
  * Performance characteristics:
- * - Initialization: ~200ms (one-time cost at server startup)
+ * - Initialization: ~200-500ms (one-time cost at server startup, shared with all configs)
  * - Runtime access: ~1ms (always cache hit)
  * - Network calls: 0 after initialization
  */
 
-// ============================================================================
-// Types
-// ============================================================================
-
-export type Category = {
-  slug: string; // URL-friendly identifier (e.g., "smartphones")
-  name: string; // Display name (e.g., "Smartphones")
-  url: string; // Full API URL for category
-};
+import {
+  initializeConfig,
+  getCategories as getConfigCategories,
+  clearConfigCache,
+  getConfigStatus,
+  type Category,
+} from "./config";
 
 // ============================================================================
-// Cache Configuration
+// Type Re-exports
 // ============================================================================
 
 /**
- * In-memory cache for categories
- * Initialized at server startup via initializeCategories()
+ * Category type (re-exported from config service)
+ *
+ * @deprecated Import from "~/services/config" instead
  */
-let categoriesCache: {
-  data: Category[] | null;
-  timestamp: number;
-} = {
-  data: null,
-  timestamp: 0,
-};
+export type { Category };
 
 // ============================================================================
-// API Constants
-// ============================================================================
-
-const CATEGORIES_API_URL = "https://dummyjson.com/products/categories";
-
-// ============================================================================
-// Public API
+// Facade Functions
 // ============================================================================
 
 /**
  * Initialize categories at server startup
  *
- * This function should be called once when the server starts (in entry.server.tsx)
- * It fetches categories from the API and caches them indefinitely in memory.
+ * This function now calls the unified configuration initialization.
+ * Categories are initialized as part of the complete app configuration.
  *
  * @param options - Configuration options
  * @param options.force - Force refresh even if cache exists (default: false)
  *
- * @throws Error if API request fails
+ * @throws Error if configuration initialization fails
+ *
+ * @deprecated Use initializeConfig() from "~/services/config" instead
  *
  * @example
  * // In app/entry.server.tsx (top-level)
@@ -67,38 +69,8 @@ const CATEGORIES_API_URL = "https://dummyjson.com/products/categories";
 export async function initializeCategories(options?: {
   force?: boolean;
 }): Promise<void> {
-  const { force = false } = options || {};
-
-  // Skip if already initialized (unless forced)
-  if (!force && categoriesCache.data) {
-    console.log("[Categories] Already initialized, skipping...");
-    return;
-  }
-
-  console.log("[Categories] Initializing from API...");
-
-  try {
-    const response = await fetch(CATEGORIES_API_URL);
-
-    if (!response.ok) {
-      throw new Error(
-        `API returned ${response.status}: ${response.statusText}`
-      );
-    }
-
-    const data = await response.json();
-
-    // Update cache with indefinite TTL
-    categoriesCache.data = data;
-    categoriesCache.timestamp = Date.now();
-
-    console.log(`[Categories] ✅ Initialized ${data.length} categories`);
-  } catch (error) {
-    console.error("[Categories] ❌ Initialization failed:", error);
-    throw new Error(
-      `Failed to initialize categories: ${error instanceof Error ? error.message : "Unknown error"}`
-    );
-  }
+  // Delegate to unified config initialization
+  await initializeConfig(options);
 }
 
 /**
@@ -106,11 +78,13 @@ export async function initializeCategories(options?: {
  *
  * This function is called by route loaders to access the cached categories.
  * It does NOT make network requests - categories must be initialized first
- * via initializeCategories() at server startup.
+ * via initializeCategories() (or initializeConfig()) at server startup.
  *
  * @returns Promise<Category[]> - Array of product categories
  *
- * @throws Error if categories not initialized
+ * @throws Error if configuration not initialized
+ *
+ * @deprecated Use getCategories() from "~/services/config" instead
  *
  * @example
  * // In route loader
@@ -120,26 +94,22 @@ export async function initializeCategories(options?: {
  * }
  */
 export async function getCategories(): Promise<Category[]> {
-  // Fail-fast if not initialized
-  if (!categoriesCache.data) {
-    throw new Error(
-      "Categories not initialized. Call initializeCategories() at server startup."
-    );
-  }
-
-  // Cache is always valid (infinite TTL)
-  return categoriesCache.data;
+  // Delegate to config service (returns synchronously, wrap in Promise for compatibility)
+  return Promise.resolve(getConfigCategories());
 }
 
 /**
  * Clear the categories cache
+ *
+ * This function now clears the entire configuration cache, not just categories.
+ * After clearing, you must call initializeCategories() or initializeConfig() again.
  *
  * Useful for:
  * - Manual cache invalidation via admin endpoint
  * - Testing scenarios
  * - Forcing a refresh without server restart
  *
- * Note: After clearing, you must call initializeCategories() again
+ * @deprecated Use clearConfigCache() from "~/services/config" instead
  *
  * @example
  * // Admin endpoint to refresh categories
@@ -150,13 +120,14 @@ export async function getCategories(): Promise<Category[]> {
  * }
  */
 export function clearCategoriesCache(): void {
-  console.log("[Categories] Cache cleared");
-  categoriesCache.data = null;
-  categoriesCache.timestamp = 0;
+  console.log("[Categories] Clearing cache (delegates to config service)...");
+  clearConfigCache();
 }
 
 /**
  * Get cache status metadata
+ *
+ * This function now returns the unified configuration cache status.
  *
  * Useful for:
  * - Health check endpoints
@@ -165,13 +136,15 @@ export function clearCategoriesCache(): void {
  *
  * @returns Cache status information
  *
+ * @deprecated Use getConfigStatus() from "~/services/config" instead
+ *
  * @example
  * // Health check endpoint
  * export async function loader() {
  *   const status = getCategoriesCacheStatus();
  *   return {
  *     healthy: status.initialized,
- *     cacheAge: Date.now() - status.timestamp
+ *     cacheAge: status.cacheAge
  *   };
  * }
  */
@@ -180,11 +153,6 @@ export function getCategoriesCacheStatus(): {
   timestamp: number;
   cacheAge: number;
 } {
-  return {
-    initialized: categoriesCache.data !== null,
-    timestamp: categoriesCache.timestamp,
-    cacheAge: categoriesCache.timestamp
-      ? Date.now() - categoriesCache.timestamp
-      : 0,
-  };
+  // Delegate to config service
+  return getConfigStatus();
 }
