@@ -6,8 +6,8 @@
     "swapi": "https://swapi.dev/api"
   },
   "endpoints": {
-    "categories": "https://dummyjson.com/products/categories",
-    "productsByCategory": "https://dummyjson.com/products/category/{slug}",
+    "categories": "/products/categories",
+    "productsByCategory": "/products/category/{slug}",
     "people": "https://swapi.dev/api/people/{slug}"
   },
   "timeouts": {

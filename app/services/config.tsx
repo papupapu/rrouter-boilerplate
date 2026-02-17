@@ -238,13 +238,12 @@ async function loadRemoteConfigs(
   // Load categories if enabled
   if (localConfig.remote?.sources.categories.enabled) {
     const categoriesSource = localConfig.remote.sources.categories;
+    const uri = `${localConfig.api?.baseUrls.dummyJson}${localConfig.api?.endpoints.categories}`;
 
     try {
-      console.log(
-        `[Config] Fetching categories from ${categoriesSource.url}...`
-      );
+      console.log(`[Config] Fetching categories from ${uri}...`);
 
-      const response = await fetch(categoriesSource.url, {
+      const response = await fetch(uri, {
         method: categoriesSource.method,
         signal: AbortSignal.timeout(categoriesSource.timeout),
       });

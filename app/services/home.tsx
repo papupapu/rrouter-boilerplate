@@ -51,11 +51,15 @@ export async function getCategoryProducts(
 
   // Get API endpoint from config
   const apiConfig = getApiConfig();
-  const url = apiConfig.endpoints.productsByCategory.replace(
+  const {
+    baseUrls: { dummyJson },
+    endpoints: { productsByCategory },
+  } = apiConfig;
+
+  const url = `${dummyJson}${productsByCategory}`.replace(
     "{slug}",
     categorySlug
   );
-
   const response = await fetch(url);
   const data: ProductsResponse = await response.json();
   return data.products;
