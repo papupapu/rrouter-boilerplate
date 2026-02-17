@@ -34,8 +34,6 @@ const Header = () => {
   // Get categories from CategoriesContext (populated by root loader)
   const categories = useCategoriesState();
 
-  console.log(categories);
-
   return (
     <div className="header c-bg--fourth">
       {/* Sidebar toggle area */}
