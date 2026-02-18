@@ -4,7 +4,6 @@
   "sources": {
     "categories": {
       "enabled": true,
-      "url": "https://dummyjson.com/products/categories",
       "method": "GET",
       "priority": "remote",
       "timeout": 15000,

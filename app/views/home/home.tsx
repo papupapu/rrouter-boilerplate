@@ -15,7 +15,7 @@
 
 import { Link } from "react-router";
 import type { Category } from "../../services/categories";
-import type { Product } from "../../services/home";
+import type { Product } from "../../services/common";
 
 type HomeData = {
   categories: Category[]; // List of all categories
@@ -57,7 +57,11 @@ export function Home({ data }: { data: HomeData }) {
                     }}
                   />
                   {/* Product details */}
-                  <h3 className="tp-w--s">{product.title}</h3>
+                  <h3 className="tp-w--s">
+                    <Link to={`/${category.slug}/${product.id}`}>
+                      {product.title}
+                    </Link>
+                  </h3>
                   <p>${product.price}</p>
                 </div>
               ))}

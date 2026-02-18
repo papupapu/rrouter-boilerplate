@@ -2,13 +2,12 @@
   "$schema": "./schemas/api.schema.json",
   "description": "API endpoints and configuration",
   "baseUrls": {
-    "dummyJson": "https://dummyjson.com",
-    "swapi": "https://swapi.dev/api"
+    "dummyJson": "https://dummyjson.com"
   },
   "endpoints": {
-    "categories": "https://dummyjson.com/products/categories",
-    "productsByCategory": "https://dummyjson.com/products/category/{slug}",
-    "people": "https://swapi.dev/api/people/{slug}"
+    "product": "/products/{slug}",
+    "categories": "/products/categories",
+    "productsByCategory": "/products/category/{slug}"
   },
   "timeouts": {
     "default": 10000,
