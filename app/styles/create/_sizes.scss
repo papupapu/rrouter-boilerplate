@@ -16,11 +16,13 @@
 
 @each $key, $value in sizes.$heights {
   @each $pfx, $prop in sizes.$sizes {
-    .#{$key}--#{$pfx} {
-      @if $pfx == "full" {
-        #{$value}: #{$prop}vh;
-      } @else {
-        #{$value}: $prop;
+    @if $pfx != "content" {
+      .#{$key}--#{$pfx} {
+        @if $pfx == "full" {
+          #{$value}: #{$prop}vh;
+        } @else {
+          #{$value}: $prop;
+        }
       }
     }
   }

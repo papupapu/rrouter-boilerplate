@@ -9,20 +9,26 @@
     top: 0;
     left: 0;
     z-index: 10;
+    max-width: 0;
     height: 100%;
     box-shadow:
       rgba(0, 0, 0, 0.05) 0px 0px 4px 0px,
       rgba(0, 0, 0, 0.15) 0px 2px 8px 0px;
   }
   width: 300px;
-  max-width: 0;
+
+  @include breakpoint-md {
+    max-width: 300px;
+    max-height: calc(100vh - 57px);
+  }
   transition: max-width 0.3s ease;
 
   &__content {
     width: 300px;
-    transform: translateX(-100%);
     transition: transform 0.3s ease;
-
+    @include breakpoint-desk {
+      transform: translateX(-100%);
+    }
     @include breakpoint-md {
       border-right: 1px solid $br-fourth;
       transition-delay: 0.1s;
@@ -45,9 +51,15 @@
 .navigation-open {
   .navigation {
     max-width: 300px;
+    @include breakpoint-md {
+      max-width: 0;
+    }
   }
   .navigation__content {
     transform: translateX(0);
+    @include breakpoint-md {
+      transform: translateX(-100%);
+    }
   }
   .navigation__overlayer {
     transform: translateX(0);

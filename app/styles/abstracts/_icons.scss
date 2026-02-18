@@ -1,0 +1,9 @@
+$icon-sm: var(--dim--200);
+$icon-md: var(--dim--300);
+$icon-lg: var(--dim--400);
+
+$icons: (
+  sm: $icon-sm,
+  md: $icon-md,
+  lg: $icon-lg,
+);

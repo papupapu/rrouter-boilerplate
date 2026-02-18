@@ -1,0 +1,17 @@
+@use "../abstracts/icons";
+
+.icon {
+  & path:not(.path-original) {
+    fill: currentColor;
+  }
+  pointer-events: none;
+}
+
+@each $key, $value in icons.$icons {
+  .icon--#{$key} {
+    width: $value;
+    height: $value;
+    min-width: $value;
+    min-height: $value;
+  }
+}

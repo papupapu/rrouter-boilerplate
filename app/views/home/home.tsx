@@ -24,17 +24,17 @@ type HomeData = {
 
 export function Home({ data }: { data: HomeData }) {
   return (
-    <main className="p--200">
-      <div className="tp-w--l">Home</div>
-      <Link to="/about">Go to about page</Link>
-
+    <main className="p--200 flex-item-stretch flex flex-column">
       {/* Render a section for each category */}
       {data.categories.map((category) => {
         // Get products for this category from the products map
         const products = data.categoryProducts[category.slug] || [];
 
         return (
-          <section key={category.slug} className="p--200">
+          <section
+            key={category.slug}
+            className="mr--auto ml--auto maxW--content"
+          >
             {/* Category heading */}
             <h2 className="tp-w--m">{category.name}</h2>
 

@@ -13,10 +13,9 @@ const Navigation = () => {
 
   return (
     <>
-      <div className="navigation flex overflow-hidden">
-        <div className="navigation__content p--200 w--100 c-bg--primary tp--nwr">
-          il contenitore collassa
-          <nav className="flex flex-column gap--200">
+      <div className="navigation flex">
+        <div className="navigation__content w--100 c-bg--primary tp--nwr overflow-y-auto">
+          <nav className="flex flex-column gap--200 pt--400 pr--200 pb--400 pl--200">
             {/* Home link */}
             <Link to="/" className="c-txt--brand">
               Home

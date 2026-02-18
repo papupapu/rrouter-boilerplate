@@ -24,21 +24,24 @@
  */
 
 import { useLayoutActionsToggleSidebar } from "../../../context/layout/layout";
+import Hamburger from "../icons/hamburger";
+
+import Icon from "../icons/icons";
 
 const Header = () => {
   // Get sidebar toggle function from LayoutContext
   const toggleSidebar = useLayoutActionsToggleSidebar();
 
   return (
-    <div className="header c-bg--fourth">
-      {/* Sidebar toggle area */}
-      <div
-        className="p--200"
+    <div className="header flex p--200 gap--200 items-center c-bg--primary bb--md c-br--fourth">
+      <button
+        type="button"
+        className="p--0 flex-item-fixed flex items-center c-txt--secondary clickable c-bg--transparent b--0"
         onClick={toggleSidebar}
-        style={{ cursor: "pointer" }}
       >
-        header (click to toggle sidebar)
-      </div>
+        <Icon name={Hamburger} className="icon--md" />
+      </button>
+      <div className="flex-item-stretch tp-w--l c-txt--primary">HEADER</div>
     </div>
   );
 };
