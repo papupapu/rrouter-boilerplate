@@ -1,0 +1,56 @@
+/* @critical */
+
+@use "styles/abstracts/colors" as *;
+@use "styles/abstracts/mixins" as *;
+
+.navigation {
+  @include breakpoint-desk {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    height: 100%;
+    box-shadow:
+      rgba(0, 0, 0, 0.05) 0px 0px 4px 0px,
+      rgba(0, 0, 0, 0.15) 0px 2px 8px 0px;
+  }
+  width: 300px;
+  max-width: 0;
+  transition: max-width 0.3s ease;
+
+  &__content {
+    width: 300px;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+
+    @include breakpoint-md {
+      border-right: 1px solid $br-fourth;
+      transition-delay: 0.1s;
+    }
+  }
+
+  &__overlayer {
+    top: 0;
+    left: 0;
+    transform: translateX(-100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+
+    @include breakpoint-md {
+      display: none;
+    }
+  }
+}
+
+.navigation-open {
+  .navigation {
+    max-width: 300px;
+  }
+  .navigation__content {
+    transform: translateX(0);
+  }
+  .navigation__overlayer {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}

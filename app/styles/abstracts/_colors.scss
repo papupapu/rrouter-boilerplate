@@ -48,6 +48,7 @@ $bg-mandatory: #fff9f2;
 $bg-warning: #fff5ea;
 $bg-accent: #39434e;
 $bg-transparent: transparent;
+$bg-overlayer: rgba(105, 118, 132, 0.5);
 
 $br-primary: #1a1f24;
 // $br-secondary: #505a65;
@@ -123,6 +124,7 @@ $background: (
   warning: $bg-warning,
   accent: $bg-accent,
   transparent: $bg-transparent,
+  overlayer: $bg-overlayer,
 );
 
 $border: (

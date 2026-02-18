@@ -23,16 +23,11 @@
  * - Always available, no loading states needed
  */
 
-import { Link } from "react-router";
 import { useLayoutActionsToggleSidebar } from "../../../context/layout/layout";
-import { useCategoriesState } from "../../../context/categories/categories";
 
 const Header = () => {
   // Get sidebar toggle function from LayoutContext
   const toggleSidebar = useLayoutActionsToggleSidebar();
-
-  // Get categories from CategoriesContext (populated by root loader)
-  const categories = useCategoriesState();
 
   return (
     <div className="header c-bg--fourth">
@@ -44,30 +39,6 @@ const Header = () => {
       >
         header (click to toggle sidebar)
       </div>
-
-      {/* Main navigation with dynamic category links */}
-      <nav className="p--200 flex gap--200" style={{ flexWrap: "wrap" }}>
-        {/* Home link */}
-        <Link to="/" className="c-txt--brand">
-          Home
-        </Link>
-
-        {/* Dynamic category links from API */}
-        {categories?.map((category) => (
-          <Link
-            key={category.slug}
-            to={`/${category.slug}`}
-            className="c-txt--secondary"
-          >
-            {category.name}
-          </Link>
-        ))}
-
-        {/* About link */}
-        <Link to="/about" className="c-txt--brand">
-          About
-        </Link>
-      </nav>
     </div>
   );
 };
