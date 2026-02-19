@@ -15,9 +15,11 @@ function Layout() {
         className={`flex-item-stretch flex${isOpen ? " navigation-open" : ""}`}
       >
         <Navigation />
-        <Outlet />
+        <div className="contents flex-item-stretch flex flex-column">
+          <Outlet />
+          <Footer />
+        </div>
       </div>
-      <Footer />
     </div>
   );
 }

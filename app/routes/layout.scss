@@ -1,0 +1,10 @@
+/* @critical */
+
+@use "styles/abstracts/mixins" as *;
+
+.contents {
+  @include breakpoint-md {
+    max-height: calc(100vh - 57px);
+    overflow-y: auto;
+  }
+}
