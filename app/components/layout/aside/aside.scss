@@ -16,7 +16,7 @@
 
 .aside-content {
   @include breakpoint-md {
-    position: sticky;
+    // position: sticky;
     align-self: flex-start;
     // Note: top value is controlled by JavaScript for optimal sticky behavior
     // when aside content is taller than viewport
