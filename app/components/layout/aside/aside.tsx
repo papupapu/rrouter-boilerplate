@@ -12,7 +12,7 @@ const DESKTOP_BREAKPOINT = 1080;
 
 const layoutSizesMap = {
   paddingTop: 32,
-  paddingBottom: 12,
+  paddingBottom: 16,
 };
 
 const HEADER_HEIGHT = 56;
@@ -64,7 +64,7 @@ export default function Aside({ children }: { children: ReactNode }) {
           setStyle({
             position: "relative",
             top: 0,
-            marginTop: 32,
+            marginTop: layoutSizesMap.paddingTop,
           });
           if (
             Math.ceil(bottom) <=
