@@ -1,0 +1,24 @@
+/* @critical */
+
+@use "styles/abstracts/colors" as *;
+@use "styles/abstracts/spacings" as *;
+@use "styles/abstracts/mixins" as *;
+
+.aside-component {
+  border-top: 1px solid $br-fourth;
+
+  @include breakpoint-md {
+    border-top: 0 none;
+    border-left: 1px solid $br-fourth;
+    width: 360px;
+  }
+}
+
+.aside-content {
+  @include breakpoint-md {
+    position: sticky;
+    align-self: flex-start;
+    // Note: top value is controlled by JavaScript for optimal sticky behavior
+    // when aside content is taller than viewport
+  }
+}

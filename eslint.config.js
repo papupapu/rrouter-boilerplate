@@ -24,6 +24,7 @@ export default [
       },
       globals: {
         ...globals.node,
+        ...globals.browser,
         React: "readonly",
       },
     },

@@ -1,6 +1,7 @@
 /* @critical */
 
 @use "styles/abstracts/colors" as *;
+@use "styles/abstracts/spacings" as *;
 @use "styles/abstracts/mixins" as *;
 
 .navigation {
@@ -30,8 +31,26 @@
       transform: translateX(-100%);
     }
     @include breakpoint-md {
+      padding-top: $spacing-200;
       border-right: 1px solid $br-fourth;
       transition-delay: 0.1s;
+    }
+
+    & a {
+      text-decoration: none;
+    }
+
+    & ul a {
+      &:hover {
+        color: $txt-primary;
+        text-decoration: underline;
+      }
+    }
+  }
+
+  &__logo {
+    @include breakpoint-md {
+      display: none;
     }
   }
 

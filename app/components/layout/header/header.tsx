@@ -25,7 +25,6 @@
 
 import { useLayoutActionsToggleSidebar } from "../../../context/layout/layout";
 import Hamburger from "../icons/hamburger";
-
 import Icon from "../icons/icons";
 
 const Header = () => {
@@ -41,7 +40,7 @@ const Header = () => {
       >
         <Icon name={Hamburger} className="icon--md" />
       </button>
-      <div className="flex-item-stretch tp-w--l c-txt--primary">HEADER</div>
+      <div className="flex-item-stretch tp-w--l c-txt--primary">SITENAME</div>
     </div>
   );
 };

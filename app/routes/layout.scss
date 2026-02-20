@@ -1,10 +1,21 @@
 /* @critical */
 
+@use "styles/abstracts/colors" as *;
+@use "styles/abstracts/spacings" as *;
 @use "styles/abstracts/mixins" as *;
 
 .contents {
   @include breakpoint-md {
     max-height: calc(100vh - 57px);
     overflow-y: auto;
+  }
+}
+
+.three-columns {
+  flex-direction: column;
+  gap: $spacing-200;
+  @include breakpoint-md {
+    flex-direction: row;
+    gap: 0;
   }
 }
