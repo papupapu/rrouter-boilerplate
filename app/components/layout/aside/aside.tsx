@@ -20,7 +20,7 @@ const INITIAL_ASIDE_TOP = layoutSizesMap.paddingTop + HEADER_HEIGHT;
 
 const defaultInitialStyle: AsideStyle = {
   position: "sticky",
-  top: layoutSizesMap.paddingTop,
+  top: 32,
   marginTop: 0,
 };
 
@@ -64,7 +64,7 @@ export default function Aside({ children }: { children: ReactNode }) {
           setStyle({
             position: "relative",
             top: 0,
-            marginTop: 0,
+            marginTop: 32,
           });
           if (
             Math.ceil(bottom) <=
@@ -95,8 +95,8 @@ export default function Aside({ children }: { children: ReactNode }) {
             top: 0,
             marginTop:
               scrollContainer.scrollTop -
-              scrollContainer.clientHeight -
-              layoutSizesMap.paddingBottom,
+              scrollContainer.clientHeight +
+              layoutSizesMap.paddingBottom / 2,
           });
           hasNotReachedTheTopYet.current = true;
           hasStuckToBottom.current = false;
