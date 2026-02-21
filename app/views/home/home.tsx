@@ -35,7 +35,7 @@ export function Home({ data }: { data: HomeData }) {
           return (
             <section
               key={category.slug}
-              className="mr--auto ml--auto maxW--content"
+              className="mr--auto ml--auto pt--200 maxW--content"
             >
               {/* Category heading */}
               <h2 className="tp-w--m">{category.name}</h2>
@@ -73,7 +73,87 @@ export function Home({ data }: { data: HomeData }) {
         })}
       </main>
       <Aside>
-        <div className="p--200">aside contents</div>
+        <div className="flex flex-column gap--300">
+          <h3 className="tp-s--xs tp-w--l c-txt--secondary">
+            Something we think it&apos;s worth a look
+          </h3>
+          <article className="flex flex-column gap--100 pb--300 bb--md c-br--fourth">
+            <h1 className="tp-s--md tp-w--l c-txt--primary">The title</h1>
+            <p className="tp-s--sm tp-w--s c-txt--secondary tp-ln--lg">
+              The Disney movie The Little Mermaid was first released to theatres
+              in 1989. The movie earned $87 million during its initial release.
+            </p>
+            <aside>
+              <p className="tp-s--xs tp-w--s c-txt--secondary">
+                by <span className="tp-w--m">John Doe</span>
+              </p>
+            </aside>
+          </article>
+          <article className="flex flex-column gap--100 pb--300 bb--md c-br--fourth">
+            <h1 className="tp-s--md tp-w--l c-txt--primary">The title</h1>
+            <p className="tp-s--sm tp-w--s c-txt--secondary tp-ln--lg">
+              The Disney movie The Little Mermaid was first released to theatres
+              in 1989. The movie earned $87 million during its initial release.
+            </p>
+            <aside>
+              <p className="tp-s--xs tp-w--s c-txt--secondary">
+                by <span className="tp-w--m">John Doe</span>
+              </p>
+            </aside>
+          </article>
+          <article className="flex flex-column gap--100">
+            <h1 className="tp-s--md tp-w--l c-txt--primary">The title</h1>
+            <p className="tp-s--sm tp-w--s c-txt--secondary tp-ln--lg">
+              The Disney movie The Little Mermaid was first released to theatres
+              in 1989. The movie earned $87 million during its initial release.
+            </p>
+            <aside>
+              <p className="tp-s--xs tp-w--s c-txt--secondary">
+                by <span className="tp-w--m">John Doe</span>
+              </p>
+            </aside>
+          </article>
+          <div className="mt--200 mb--200 c-bg--fourth p--300 b-r--md">
+            <p className="tp-s--md tp-w--s c-txt--primary tp-ln--lg">
+              The Disney movie The Little Mermaid was first released to theatres
+              in 1989. The movie earned $87 million during its initial release.
+            </p>
+          </div>
+          <h3 className="tp-s--xs tp-w--l c-txt--secondary">
+            Something we think it&apos;s worth a look
+          </h3>
+          <ul className="flex flex-column gap--100">
+            <li className="flex gap--150 items-center">
+              <span className="c-bg--fourth p--200 b-r--pill" />
+              <p className="tp-s--sm tp-w--s c-txt--secondary">Item 1</p>
+            </li>
+            <li className="flex gap--150 items-center">
+              <span className="c-bg--fourth p--200 b-r--pill" />
+              <p className="tp-s--sm tp-w--s c-txt--secondary">Item 2</p>
+            </li>
+            <li className="flex gap--150 items-center">
+              <span className="c-bg--fourth p--200 b-r--pill" />
+              <p className="tp-s--sm tp-w--s c-txt--secondary">Item 3</p>
+            </li>
+            <li className="flex gap--150 items-center">
+              <span className="c-bg--fourth p--200 b-r--pill" />
+              <p className="tp-s--sm tp-w--s c-txt--secondary">Item 4</p>
+            </li>
+            <li className="flex gap--150 items-center">
+              <span className="c-bg--fourth p--200 b-r--pill" />
+              <p className="tp-s--sm tp-w--s c-txt--secondary">Item 4</p>
+            </li>
+          </ul>
+          <div className="flex flex-column gap--50 pb--400">
+            <h3 className="pt--200 tp-s--xs tp-w--l c-txt--secondary">
+              Meaningfull infos
+            </h3>
+            <p className="tp-s--xs tp-w--s c-txt--primary tp-ln--lg">
+              The Disney movie The Little Mermaid was first released to theatres
+              in 1989. The movie earned $87 million during its initial release.
+            </p>
+          </div>
+        </div>
       </Aside>
     </div>
   );

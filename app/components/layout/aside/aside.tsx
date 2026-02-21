@@ -94,9 +94,10 @@ export default function Aside({ children }: { children: ReactNode }) {
             position: "relative",
             top: 0,
             marginTop:
-              scrollContainer.scrollTop -
-              scrollContainer.clientHeight +
-              layoutSizesMap.paddingBottom / 2,
+              scrollContainer.scrollTop +
+              scrollContainer.clientHeight -
+              height -
+              layoutSizesMap.paddingBottom,
           });
           hasNotReachedTheTopYet.current = true;
           hasStuckToBottom.current = false;
@@ -116,10 +117,7 @@ export default function Aside({ children }: { children: ReactNode }) {
 
   return (
     <aside className="aside-component pr--200  pb--200  pl--200">
-      <div ref={asideRef} className="aside-content c-bg--fourth" style={style}>
-        {[...Array(50).keys()].map((i) => (
-          <p key={i}>Aside content line {i + 1}</p>
-        ))}
+      <div ref={asideRef} className="aside-content" style={style}>
         {children}
       </div>
     </aside>
