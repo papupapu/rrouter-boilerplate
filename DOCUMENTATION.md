@@ -2,6 +2,8 @@
 
 > A modern full-stack React Router application with TypeScript, Vite, Sass, and comprehensive tooling.
 
+**🤖 For AI Models**: Looking for a quick context overview? See [AI_CONTEXT.md](AI_CONTEXT.md) for a concise reference (~250 lines vs 1000+).
+
 ## Table of Contents
 
 - [Prerequisites](#prerequisites)

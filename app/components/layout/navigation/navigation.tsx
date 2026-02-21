@@ -3,6 +3,7 @@ import { useLayoutActionsToggleSidebar } from "../../../context/layout/layout";
 import { useCategoriesState } from "../../../context/categories/categories";
 
 import Hamburger from "../icons/hamburger";
+import Home from "../icons/home";
 import Icon from "../icons/icons";
 
 import "./navigation.scss";
@@ -17,8 +18,8 @@ const Navigation = () => {
   return (
     <>
       <div className="navigation flex">
-        <div className="navigation__content w--100 c-bg--primary tp--nwr overflow-y-auto">
-          <nav className="flex flex-column gap--200 pt--200 pb--400">
+        <div className="navigation__content w--100 c-bg--tertiary tp--nwr overflow-y-auto">
+          <nav className="flex flex-column gap--100 pt--200 pb--400">
             <div className="navigation__logo flex justify-between mr--250 ml--250 bb--md c-br--fourth">
               <p className="tp-w--l c-txt--primary">SITENAME</p>
               <button
@@ -29,10 +30,13 @@ const Navigation = () => {
                 <Icon name={Hamburger} className="icon--md" />
               </button>
             </div>
-            <Link to="/" className="pl--250 tp-s--xs tp-w--m c-txt--secondary">
-              Home
+            <Link
+              to="/"
+              className="flex items-center gap--100 mr--200 ml--200 p--100 tp-s--xs tp-w--m c-txt--secondary c-bg--primary  b-r--md"
+            >
+              <Icon name={Home} className="icon--sm" /> Home
             </Link>
-            <div className="mr--200 ml--200 pt--150 pb--200 pl--150 c-bg--tertiary b-r--md">
+            <div className="mr--200 ml--200 pt--150 pb--200 pl--150 c-bg--primary b-r--md">
               <h3 className="tp-s--xxs tp-w--l tp--up c-txt--secondary">
                 Categories
               </h3>
