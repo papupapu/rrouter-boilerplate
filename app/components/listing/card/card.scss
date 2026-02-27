@@ -1,0 +1,34 @@
+@use "styles/abstracts/mixins" as *;
+@use "styles/abstracts/colors" as *;
+
+.listing-card {
+  flex: 1;
+
+  @media (hover: hover) {
+    &:hover {
+      border-color: $br-primary;
+      & .c-br--fourth {
+        border-color: $br-primary;
+      }
+    }
+  }
+
+  &__ctn {
+    order: 2;
+  }
+
+  &__img {
+    order: 1;
+  }
+
+  & a {
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
