@@ -20,7 +20,7 @@ const Navigation = () => {
       <div className="navigation flex">
         <div className="navigation__content w--100 c-bg--tertiary tp--nwr overflow-y-auto">
           <nav className="flex flex-column gap--100 pt--200 pb--400">
-            <div className="navigation__logo flex justify-between mr--250 ml--250 bb--md c-br--fourth">
+            <div className="navigation__logo flex justify-between items-center mr--250 mb--150 ml--250 pb--150 bb--md c-br--fourth">
               <p className="tp-w--l c-txt--primary">SITENAME</p>
               <button
                 type="button"

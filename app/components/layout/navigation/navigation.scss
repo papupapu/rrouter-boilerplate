@@ -27,6 +27,7 @@
   &__content {
     width: 300px;
     transition: transform 0.3s ease;
+    overscroll-behavior: contain;
     @include breakpoint-desk {
       transform: translateX(-100%);
     }

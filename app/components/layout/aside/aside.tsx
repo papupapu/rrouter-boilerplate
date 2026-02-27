@@ -30,6 +30,7 @@ export default function Aside({ children }: { children: ReactNode }) {
   const lastScrollTop = useRef<number>(0);
   const hasStuckToBottom = useRef<boolean>(false);
   const hasNotReachedTheTopYet = useRef<boolean>(false);
+  const hasSetDownwardPosition = useRef<boolean>(false);
   const contentsRef = useLayoutContentsRef();
 
   useEffect(() => {
@@ -61,11 +62,27 @@ export default function Aside({ children }: { children: ReactNode }) {
       // attacca l'aside al fondo quando raggiunge il punto in cui il fondo dell'aside è a 16px dal fondo del container
       if (scrollingDown) {
         if (!hasStuckToBottom.current) {
-          setStyle({
-            position: "relative",
-            top: 0,
-            marginTop: layoutSizesMap.paddingTop,
-          });
+          // Only set position once when starting to scroll down
+          if (!hasSetDownwardPosition.current) {
+            // Check if we're at the very top of the scroll container
+            const hasScrolledFromStart = scrollContainer.scrollTop > 5;
+
+            let marginTop = 0;
+            if (!hasScrolledFromStart) {
+              // At page top, use padding
+              marginTop = layoutSizesMap.paddingTop;
+            } else {
+              // Maintain current visual position when switching from sticky to relative
+              marginTop = scrollContainer.scrollTop + top - HEADER_HEIGHT;
+            }
+
+            setStyle({
+              position: "relative",
+              top: 0,
+              marginTop,
+            });
+            hasSetDownwardPosition.current = true;
+          }
           if (
             Math.ceil(bottom) <=
             scrollContainer.clientHeight +
@@ -82,13 +99,17 @@ export default function Aside({ children }: { children: ReactNode }) {
             });
             hasStuckToBottom.current = true;
             hasNotReachedTheTopYet.current = false;
+            hasSetDownwardPosition.current = false;
           }
         }
         // se si scrolla verso l'alto e si è attaccati al fondo,
         // stacca l'aside dal fondo quando il top dell'aside raggiunge INITIAL_ASIDE_TOP dal top del viewport
       } else {
+        hasSetDownwardPosition.current = false;
         if (top >= INITIAL_ASIDE_TOP) {
           setStyle(defaultInitialStyle);
+          hasStuckToBottom.current = false;
+          hasNotReachedTheTopYet.current = false;
         } else if (!hasNotReachedTheTopYet.current) {
           setStyle({
             position: "relative",
@@ -113,7 +134,7 @@ export default function Aside({ children }: { children: ReactNode }) {
       scrollContainer.removeEventListener("scroll", getPosition);
       window.removeEventListener("resize", handleResize);
     };
-  }, [children, style]);
+  }, [children, style, contentsRef]);
 
   return (
     <aside className="aside-component pr--200  pb--200  pl--200">
