@@ -2,7 +2,6 @@ import type { Product } from "../../../services/common";
 
 export default function ListingCard({ product }: { product: Product }) {
   const { id, title, description, price, stock, thumbnail, category } = product;
-  console.log(product);
   return (
     <article className="listing-card relative flex flex-column b--md b-r--md c-br--fourth is-anim-borderColor">
       <div className="listing-card__ctn p--200 flex flex-column flex-item-stretch gap--200 bt--md c-br--fourth is-anim-borderColor">
@@ -28,7 +27,13 @@ export default function ListingCard({ product }: { product: Product }) {
           </p>
         </div>
       </div>
-      <img className="listing-card__img block" src={thumbnail} alt={title} />
+      <img
+        className="listing-card__img block"
+        width="300"
+        height="300"
+        src={thumbnail}
+        alt={title}
+      />
     </article>
   );
 }

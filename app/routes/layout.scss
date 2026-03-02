@@ -20,8 +20,6 @@
   }
 
   & > main {
-    padding-right: $spacing-250;
-    padding-left: $spacing-250;
     gap: $spacing-250;
     @include breakpoint-md {
       padding-right: $spacing-400;

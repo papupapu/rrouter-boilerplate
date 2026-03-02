@@ -1,3 +1,5 @@
+/* @critical */
+
 @use "styles/abstracts/mixins" as *;
 @use "styles/abstracts/colors" as *;
 
@@ -19,6 +21,9 @@
 
   &__img {
     order: 1;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
   }
 
   & a {

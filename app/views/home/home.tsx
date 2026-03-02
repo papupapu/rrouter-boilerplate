@@ -27,7 +27,7 @@ type HomeData = {
 export function Home({ data }: { data: HomeData }) {
   return (
     <div className="three-columns flex-item-stretch flex">
-      <main className="flex-item-stretch p--200 flex flex-column">
+      <main className="flex-item-stretch pt--200 pb--200 flex flex-column">
         {/* Render a section for each category */}
         {data.categories.map((category) => {
           // Get products for this category from the products map
@@ -39,10 +39,12 @@ export function Home({ data }: { data: HomeData }) {
               className="flex flex-column gap--150 mr--auto ml--auto w--100"
             >
               {/* Category heading */}
-              <h2 className="tp-s--xs tp-w--m tp--up">{category.name}</h2>
+              <h2 className="cat_heading tp-s--xs tp-w--m tp--up">
+                {category.name}
+              </h2>
 
               {/* Product grid - showing first 4 products */}
-              <div className="flex gap--200">
+              <div className="mobile__carousel flex">
                 {products.slice(0, 3).map((product) => (
                   <Card key={product.id} product={product} />
                 ))}

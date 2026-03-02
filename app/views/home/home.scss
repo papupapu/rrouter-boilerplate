@@ -1,0 +1,34 @@
+/* @critical */
+
+@use "styles/abstracts/spacings" as *;
+@use "styles/abstracts/mixins" as *;
+
+.cat_heading {
+  @include breakpoint-smart {
+    padding-left: $spacing-250;
+  }
+}
+
+.mobile__carousel {
+  @include breakpoint-smart {
+    max-width: 100vw;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    justify-content: space-around;
+  }
+
+  gap: $spacing-250;
+
+  & .listing-card {
+    @include breakpoint-smart {
+      min-width: calc(100vw - $spacing-250 * 3);
+      scroll-snap-align: center;
+      &:first-of-type {
+        margin-left: $spacing-250;
+      }
+      &:last-of-type {
+        margin-right: $spacing-250;
+      }
+    }
+  }
+}
