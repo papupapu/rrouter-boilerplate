@@ -8,7 +8,7 @@ type AsideStyle = {
   marginTop: number;
 };
 
-const DESKTOP_BREAKPOINT = 1080;
+const DESKTOP_BREAKPOINT = 767;
 
 const layoutSizesMap = {
   paddingTop: 32,
@@ -35,14 +35,13 @@ export default function Aside({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const scrollContainer = contentsRef?.current;
-
     if (!scrollContainer) return;
 
     const handleResize = () => {
       const isDesktop = window.innerWidth >= DESKTOP_BREAKPOINT;
-
       if (isDesktop) {
         // Reset to default sticky position on desktop
+        console.log("set default style");
         setStyle(defaultInitialStyle);
       }
     };
@@ -57,7 +56,6 @@ export default function Aside({ children }: { children: ReactNode }) {
       const scrollingDown = currentScrollTop > lastScrollTop.current;
 
       const { top, bottom, height } = asideRef.current.getBoundingClientRect();
-
       // se si scrolla verso il basso e non si è ancora attaccati al fondo,
       // attacca l'aside al fondo quando raggiunge il punto in cui il fondo dell'aside è a 16px dal fondo del container
       if (scrollingDown) {

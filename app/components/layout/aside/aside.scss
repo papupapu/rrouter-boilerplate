@@ -8,21 +8,27 @@
   padding-top: $spacing-300;
   border-top: 1px solid $br-fourth;
 
-  @include breakpoint-md {
+  @include breakpoint-sm {
     padding-top: 0;
     border-top: 0 none;
     border-left: 1px solid $br-fourth;
-    min-width: 320px;
-    max-width: 320px;
+    min-width: 340px;
+    max-width: 340px;
   }
-  @include breakpoint-lg {
+
+  @include breakpoint-md {
+    min-width: 300px;
+    max-width: 300px;
+  }
+
+  @include breakpoint-xl {
     min-width: 360px;
     max-width: 360px;
   }
 }
 
 .aside-content {
-  @include breakpoint-md {
+  @include breakpoint-xs {
     align-self: flex-start;
   }
 }

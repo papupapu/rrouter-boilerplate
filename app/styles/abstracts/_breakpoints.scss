@@ -1,11 +1,13 @@
 $bpval-xxs: 360px;
 $bpval-xs: 576px;
 $bpval-sm: 768px;
-$bpval-md: 1080px;
-$bpval-lg: 1280px;
-$bpval-xl: 1600px;
-$bpval-xxl: 1900px;
+$bpval-md: 992px;
+$bpval-lg: 1024px;
+$bpval-xl: 1240px;
+$bpval-xxl: 1420px;
+$bpval-xxxl: 1600px;
 $bpval-smart: 767px;
+$bpval-tab: 991px;
 $bpval-desk: 1079px;
 
 $breakpoints: (
@@ -16,6 +18,7 @@ $breakpoints: (
   bp-lg: $bpval-lg,
   bp-xl: $bpval-xl,
   bp-xxl: $bpval-xxl,
+  bp-xxxl: $bpval-xxxl,
   bp-smart: $bpval-smart,
   bp-desk: $bpval-desk,
 );
@@ -41,11 +44,17 @@ $bp-xl: (
 $bp-xxl: (
   min: $bpval-xxl,
 );
+$bp-xxxl: (
+  min: $bpval-xxxl,
+);
 $bp-smallsmart: (
   max: $bpval-xxs - 1px,
 );
 $bp-smart: (
   max: $bpval-smart,
+);
+$bp-tab: (
+  max: $bpval-tab,
 );
 $bp-desk: (
   max: $bpval-desk,

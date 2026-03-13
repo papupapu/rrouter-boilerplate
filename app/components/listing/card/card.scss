@@ -5,10 +5,36 @@
 
 .listing-card {
   flex: 1;
+  flex-direction: column;
+
+  @include breakpoint-xs {
+    flex-direction: row;
+  }
+
+  @include breakpoint-sm {
+    flex-direction: column;
+  }
+
+  @include breakpoint-md {
+    flex-direction: row;
+  }
+
+  @include breakpoint-lg {
+    flex-direction: column;
+  }
+
+  @include breakpoint-xl {
+    flex-direction: row;
+  }
+
+  @include breakpoint-xxl {
+    flex-direction: column;
+  }
 
   @media (hover: hover) {
     &:hover {
       border-color: $br-primary;
+      & .listing-card__img,
       & .c-br--fourth {
         border-color: $br-primary;
       }
@@ -24,6 +50,36 @@
     width: 100%;
     height: auto;
     aspect-ratio: 1 / 1;
+    border-bottom: 1px solid $br-fourth;
+    @include breakpoint-xs {
+      border-bottom: 0 none;
+      border-right: 1px solid $br-fourth;
+    }
+
+    @include breakpoint-sm {
+      border-bottom: 1px solid $br-fourth;
+      border-right: 0 none;
+    }
+
+    @include breakpoint-md {
+      border-bottom: 0 none;
+      border-right: 1px solid $br-fourth;
+    }
+
+    @include breakpoint-lg {
+      border-bottom: 1px solid $br-fourth;
+      border-right: 0 none;
+    }
+
+    @include breakpoint-xl {
+      border-bottom: 0 none;
+      border-right: 1px solid $br-fourth;
+    }
+
+    @include breakpoint-xxl {
+      border-bottom: 1px solid $br-fourth;
+      border-right: 0 none;
+    }
   }
 
   & a {

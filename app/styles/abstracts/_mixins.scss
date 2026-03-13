@@ -57,6 +57,11 @@
     @content;
   }
 }
+@mixin breakpoint-xxxl() {
+  @include breakpoint(breakpoints.$bp-xxxl) {
+    @content;
+  }
+}
 @mixin breakpoint-smallsmart() {
   @include breakpoint(breakpoints.$bp-smallsmart) {
     @content;
@@ -64,6 +69,11 @@
 }
 @mixin breakpoint-smart() {
   @include breakpoint(breakpoints.$bp-smart) {
+    @content;
+  }
+}
+@mixin breakpoint-tab() {
+  @include breakpoint(breakpoints.$bp-tab) {
     @content;
   }
 }

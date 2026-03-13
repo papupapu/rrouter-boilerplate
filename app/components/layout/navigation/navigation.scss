@@ -5,36 +5,36 @@
 @use "styles/abstracts/mixins" as *;
 
 .navigation {
-  @include breakpoint-desk {
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 10;
-    max-width: 0;
-    height: 100%;
-    box-shadow:
-      rgba(0, 0, 0, 0.05) 0px 0px 4px 0px,
-      rgba(0, 0, 0, 0.15) 0px 2px 8px 0px;
-  }
-  width: 300px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  max-width: 0;
+  height: 100%;
+  box-shadow:
+    rgba(0, 0, 0, 0.05) 0px 0px 4px 0px,
+    rgba(0, 0, 0, 0.15) 0px 2px 8px 0px;
+  transition: max-width 0.3s ease;
 
-  @include breakpoint-md {
+  @include breakpoint-xl {
+    position: static;
+    width: 300px;
     max-width: 300px;
     max-height: calc(100vh - 57px);
+    box-shadow: none;
   }
-  transition: max-width 0.3s ease;
 
   &__content {
     width: 300px;
-    transition: transform 0.3s ease;
+    transform: translateX(-100%);
     overscroll-behavior: contain;
-    @include breakpoint-desk {
-      transform: translateX(-100%);
-    }
-    @include breakpoint-md {
+    transition: transform 0.3s ease;
+
+    @include breakpoint-xl {
       padding-top: $spacing-200;
       border-right: 1px solid $br-fourth;
       transition-delay: 0.1s;
+      transform: translateX(0);
     }
 
     & a {
@@ -50,7 +50,7 @@
   }
 
   &__logo {
-    @include breakpoint-md {
+    @include breakpoint-xl {
       display: none;
     }
   }
@@ -61,8 +61,9 @@
     transform: translateX(-100%);
     opacity: 0;
     transition: opacity 0.3s ease;
+    z-index: 1;
 
-    @include breakpoint-md {
+    @include breakpoint-xl {
       display: none;
     }
   }
@@ -71,13 +72,13 @@
 .navigation-open {
   .navigation {
     max-width: 300px;
-    @include breakpoint-md {
+    @include breakpoint-xl {
       max-width: 0;
     }
   }
   .navigation__content {
     transform: translateX(0);
-    @include breakpoint-md {
+    @include breakpoint-xl {
       transform: translateX(-100%);
     }
   }

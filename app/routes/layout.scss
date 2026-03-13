@@ -5,7 +5,7 @@
 @use "styles/abstracts/mixins" as *;
 
 .contents {
-  @include breakpoint-md {
+  @include breakpoint-sm {
     max-height: calc(100vh - 57px);
     overflow-y: auto;
   }
@@ -14,14 +14,19 @@
 .three-columns {
   flex-direction: column;
   gap: $spacing-200;
-  @include breakpoint-md {
+  @include breakpoint-sm {
     flex-direction: row;
     gap: 0;
   }
 
   & > main {
-    gap: $spacing-250;
-    @include breakpoint-md {
+    gap: $spacing-200;
+    @include breakpoint-lg {
+      padding-right: $spacing-200;
+      padding-left: $spacing-200;
+      gap: $spacing-200;
+    }
+    @include breakpoint-xl {
       padding-right: $spacing-400;
       padding-left: $spacing-400;
       gap: $spacing-400;

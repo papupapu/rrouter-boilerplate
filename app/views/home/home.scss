@@ -4,31 +4,83 @@
 @use "styles/abstracts/mixins" as *;
 
 .cat_heading {
-  @include breakpoint-smart {
+  @include breakpoint-tab {
     padding-left: $spacing-250;
+  }
+  @include breakpoint-md {
+    padding-left: $spacing-250;
+  }
+  @include breakpoint-lg {
+    padding-left: 0;
   }
 }
 
 .mobile__carousel {
-  @include breakpoint-smart {
-    max-width: 100vw;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    justify-content: space-around;
+  max-width: calc(100vw - $spacing-250);
+  gap: $spacing-250;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  justify-content: space-around;
+  margin-left: $spacing-250;
+
+  @include breakpoint-sm {
+    max-width: calc(100vw - $spacing-250 - 340px);
   }
 
-  gap: $spacing-250;
+  @include breakpoint-md {
+    max-width: calc(100vw - $spacing-250 - 300px);
+  }
+
+  @include breakpoint-lg {
+    margin-left: 0;
+    max-width: 100%;
+    gap: 0;
+    flex-wrap: wrap;
+    overflow-x: visible;
+    scroll-snap-type: none;
+    justify-content: space-between;
+  }
+
+  @include breakpoint-xl {
+    gap: $spacing-400;
+  }
+
+  @include breakpoint-xxl {
+    gap: 0;
+  }
 
   & .listing-card {
-    @include breakpoint-smart {
-      min-width: calc(100vw - $spacing-250 * 3);
-      scroll-snap-align: center;
-      &:first-of-type {
-        margin-left: $spacing-250;
-      }
+    min-width: calc(100vw - $spacing-250 * 3);
+    scroll-snap-align: start;
+    &:last-of-type {
+      margin-right: calc($spacing-250 * 3);
+    }
+
+    @include breakpoint-sm {
+      min-width: calc(100vw - 340px - $spacing-250 * 3);
+    }
+
+    @include breakpoint-md {
+      min-width: calc(100vw - 300px - $spacing-250 * 3);
+    }
+
+    @include breakpoint-lg {
+      min-width: auto;
+      flex: 0 1 calc(33% - $spacing-100);
       &:last-of-type {
-        margin-right: $spacing-250;
+        margin-right: 0;
       }
+    }
+
+    @include breakpoint-xl {
+      flex: 0 1 100%;
+    }
+
+    @include breakpoint-xxl {
+      flex: 0 1 calc(33% - $spacing-100);
+    }
+    @include breakpoint-xxxl {
+      flex: 0 1 calc(33% - $spacing-250);
     }
   }
 }
